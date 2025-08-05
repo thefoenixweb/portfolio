@@ -1,4 +1,4 @@
-"use client"; // If using Next.js App Router
+"use client"; 
 
 import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
@@ -6,8 +6,7 @@ import { OrbitControls, Box } from '@react-three/drei';
 import * as THREE from 'three';
 import ThreeMeshUI from 'three-mesh-ui';
 
-// Import your assets
-// Ensure these paths are correct relative to your public folder or build system
+
 import Project1Image from '../assets/project1.png';
 import Project2Image from '../assets/project2.png';
 
@@ -21,7 +20,7 @@ interface FormData {
 
 // Define types for the props of PortfolioUI (if it were to accept any)
 interface PortfolioUIProps {
-  // No specific props needed for this example, but you could add them here
+
 }
 
 function PortfolioUI(props: PortfolioUIProps) {
@@ -70,95 +69,302 @@ function PortfolioUI(props: PortfolioUIProps) {
     block.setState("idle");
   };
 
-  // Font files should be in public folder and referenced as absolute paths
+  
   const FontJSON = "/Roboto-msdf.json";
   const FontImage = "/Roboto-msdf.png";
   
-    // Create UI sections as separate blocks (not nested)
+    // Create actual portfolio sections
   const headerBlock = useMemo(() => {
     const block = new ThreeMeshUI.Block({
-      width: 5,
-      height: 0.5,
+      width: 6,
+      height: 0.6,
       padding: 0.05,
-      backgroundColor: new THREE.Color(0xff0000), // bright red
+      backgroundColor: new THREE.Color(0x2c3e50), // dark blue-gray
       contentDirection: "row",
       justifyContent: "start",
       alignItems: "center",
     });
     // Set position after creation
-    block.position.set(0, 2, 0);
+    block.position.set(0, 3.5, 0); // moved up to align with top of scene
 
     // Add name
     const nameText = new ThreeMeshUI.Text({
       content: "Tshepiso Molefi",
-      fontSize: 0.15,
+      fontSize: 0.12,
       fontFamily: FontJSON,
       fontTexture: FontImage,
       fontColor: new THREE.Color(0xffffff),
     });
     block.add(nameText);
 
-    // Add navigation items
-    const navItems: string[] = ["About", "Projects", "Contact"];
-    navItems.forEach((item: string) => {
-      const navText = new ThreeMeshUI.Text({
-        content: item,
-        fontSize: 0.1,
-        fontFamily: FontJSON,
-        fontTexture: FontImage,
-        fontColor: new THREE.Color(0xffffff),
-        margin: [0, 0.05, 0, 0],
-      });
-      block.add(navText);
+    // Add navigation items (simplified to avoid text rendering issues)
+    const navText = new ThreeMeshUI.Text({
+      content: "About | Projects | Skills | Contact",
+      fontSize: 0.08,
+      fontFamily: FontJSON,
+      fontTexture: FontImage,
+      fontColor: new THREE.Color(0xecf0f1),
+      margin: [0, 0.05, 0, 0],
     });
+    block.add(navText);
 
     return block;
   }, [formData]);
 
-  const heroBlock = useMemo(() => {
+  // const heroBlock = useMemo(() => {
+  //   const block = new ThreeMeshUI.Block({
+  //     width: 5,
+  //     height: 1.2,
+  //     padding: 0.1,
+  //     backgroundColor: new THREE.Color(0x3498db), // blue
+  //     contentDirection: "column",
+  //     justifyContent: "center",
+  //     alignItems: "center",
+  //   });
+  //   // Set position after creation
+  //   block.position.set(0, 2.5, 0); // moved up to follow header
+
+  //   const heroTitle = new ThreeMeshUI.Text({
+  //     content: "Web Developer & Security Analyst",
+  //     fontSize: 0.12,
+  //     fontFamily: FontJSON,
+  //     fontTexture: FontImage,
+  //     fontColor: new THREE.Color(0xffffff),
+  //   });
+  //   block.add(heroTitle);
+
+  //   return block;
+  // }, [formData]);
+
+  // const aboutBlock = useMemo(() => {
+  //   const block = new ThreeMeshUI.Block({
+  //     width: 4.5,
+  //     height: 1.0,
+  //     padding: 0.08,
+  //     backgroundColor: new THREE.Color(0xe74c3c), // red
+  //     contentDirection: "column",
+  //     justifyContent: "center",
+  //     alignItems: "center",
+  //   });
+  //   // Set position after creation
+  //   block.position.set(0, 1.5, 0); // moved up to follow hero
+
+  //   const aboutTitle = new ThreeMeshUI.Text({
+  //     content: "About Me",
+  //     fontSize: 0.12,
+  //     fontFamily: FontJSON,
+  //     fontTexture: FontImage,
+  //     fontColor: new THREE.Color(0xffffff),
+  //   });
+  //   block.add(aboutTitle);
+
+  //   return block;
+  // }, [formData]);
+
+  // Create individual project blocks (flattened approach)
+  const project1ImageBlock = useMemo(() => {
+    // Create the image mesh directly without a background block
+    const texture = new THREE.TextureLoader().load(Project1Image);
+    const geometry = new THREE.PlaneGeometry(1.5, 0.8);
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const projectImage = new THREE.Mesh(geometry, material);
+    projectImage.position.set(-1.5, 0.5, 0.1); // left side of project area
+    
+    return projectImage;
+  }, [formData]);
+
+  const project1DescBlock = useMemo(() => {
     const block = new ThreeMeshUI.Block({
-      width: 4,
+      width: 2.5,
       height: 0.8,
-      padding: 0.1,
-      backgroundColor: new THREE.Color(0x00ff00), // bright green
-      contentDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
+      backgroundColor: new THREE.Color(0x2ecc71), // lighter green
     });
     // Set position after creation
-    block.position.set(0, 1, 0);
+    block.position.set(1.0, 0.5, 0.1); // right side of project area
 
-    const heroTitle = new ThreeMeshUI.Text({
-      content: "Web Developer, Security Analyst, Tech Support",
-      fontSize: 0.15,
-      fontFamily: FontJSON,
-      fontTexture: FontImage,
-      fontColor: new THREE.Color(0x000000),
-    });
-    block.add(heroTitle);
-
-    const heroSubtitle = new ThreeMeshUI.Text({
-      content: "Crafting secure and robust web solutions.",
+    const projectTitle = new ThreeMeshUI.Text({
+      content: "Portfolio Website",
       fontSize: 0.1,
       fontFamily: FontJSON,
       fontTexture: FontImage,
-      fontColor: new THREE.Color(0x000000),
+      fontColor: new THREE.Color(0xffffff),
     });
-    block.add(heroSubtitle);
+    block.add(projectTitle);
+
+    const projectDesc = new ThreeMeshUI.Text({
+      content: "3D Interactive Portfolio built with React Three Fiber and ThreeMeshUI",
+      fontSize: 0.07,
+      fontFamily: FontJSON,
+      fontTexture: FontImage,
+      fontColor: new THREE.Color(0xecf0f1),
+    });
+    block.add(projectDesc);
 
     return block;
   }, [formData]);
 
-  const testBlock = useMemo(() => {
+  const project2ImageBlock = useMemo(() => {
+    // Create the image mesh directly without a background block
+    const texture = new THREE.TextureLoader().load(Project2Image);
+    const geometry = new THREE.PlaneGeometry(1.5, 0.8);
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const projectImage = new THREE.Mesh(geometry, material);
+    projectImage.position.set(-1.5, -0.5, 0.1); // left side of project area
+    
+    return projectImage;
+  }, [formData]);
+
+  const project2DescBlock = useMemo(() => {
     const block = new ThreeMeshUI.Block({
-      width: 1,
-      height: 0.3,
-      backgroundColor: new THREE.Color(0x0000ff), // bright blue
+      width: 2.5,
+      height: 0.8,
+      backgroundColor: new THREE.Color(0x2ecc71), // lighter green
     });
     // Set position after creation
-    block.position.set(0, 0, 0);
+    block.position.set(1.0, -0.5, 0.1); // right side of project area
+
+    const projectTitle = new ThreeMeshUI.Text({
+      content: "Web Application",
+      fontSize: 0.1,
+      fontFamily: FontJSON,
+      fontTexture: FontImage,
+      fontColor: new THREE.Color(0xffffff),
+    });
+    block.add(projectTitle);
+
+    const projectDesc = new ThreeMeshUI.Text({
+      content: "Full-stack web application with modern UI/UX design",
+      fontSize: 0.07,
+      fontFamily: FontJSON,
+      fontTexture: FontImage,
+      fontColor: new THREE.Color(0xecf0f1),
+    });
+    block.add(projectDesc);
+
     return block;
   }, [formData]);
+
+  const contactBlock = useMemo(() => {
+    const block = new ThreeMeshUI.Block({
+      width: 6,
+      height: 0.8,
+      padding: 0.1,
+      backgroundColor: new THREE.Color(0x2c3e50), // dark blue-gray to match header
+      contentDirection: "row",
+      justifyContent: "start",
+      alignItems: "center",
+    });
+    // Set position after creation
+    block.position.set(0, -2.5, 0); // positioned at bottom as footer
+
+    // Email section
+    const emailText = new ThreeMeshUI.Text({
+      content: "tshepiso.molefi@yahoo.com",
+      fontSize: 0.08,
+      fontFamily: FontJSON,
+      fontTexture: FontImage,
+      fontColor: new THREE.Color(0xecf0f1),
+    });
+    // Position email text to the left within footer bounds
+    emailText.position.set(-1.5, 0, 0);
+    block.add(emailText);
+
+    // GitHub section
+    const githubText = new ThreeMeshUI.Text({
+      content: "GitHub: @thefoenixweb",
+      fontSize: 0.08,
+      fontFamily: FontJSON,
+      fontTexture: FontImage,
+      fontColor: new THREE.Color(0xecf0f1),
+    });
+    // Position GitHub text to the right within footer bounds
+    githubText.position.set(1.5, 0, 0);
+    block.add(githubText);
+
+    return block;
+  }, [formData]);
+
+  // Description block
+  const descriptionBlock = useMemo(() => {
+    const block = new ThreeMeshUI.Block({
+      width: 4,
+      height: 1,
+      backgroundColor: new THREE.Color(0x34495e),
+      padding: 0.1,
+      margin: [0, 0.1, 0, 0],
+    });
+
+    const descriptionText = new ThreeMeshUI.Text({
+      content: "I am a web developer who enjoys creating fintech apps and 3d web apps. I know, C#, javascript and typescript. The libraries I use to build these apps are react, asp core and threejs.",
+      fontSize: 0.06,
+      fontFamily: FontJSON,
+      fontTexture: FontImage,
+      fontColor: new THREE.Color(0xecf0f1),
+    });
+    block.add(descriptionText);
+
+    // Set position after creation
+    block.position.set(-0.8, 2.5, 0);
+
+    return block;
+  }, []);
+
+  // Helper function to create circular blocks
+  const createCircularBlock = (size: number, backgroundColor: THREE.Color) => {
+    return new ThreeMeshUI.Block({
+      width: size,
+      height: size,
+      backgroundColor,
+      borderRadius: size / 2, // Automatically makes it circular
+      padding: 0.05,
+      margin: [0, 0.1, 0, 0],
+    });
+  };
+
+  // Avatar placeholder block
+  const avatarBlock = useMemo(() => {
+    const block = createCircularBlock(1.2, new THREE.Color(0x95a5a6));
+
+    const avatarText = new ThreeMeshUI.Text({
+      content: "TM",
+      fontSize: 0.3,
+      fontFamily: FontJSON,
+      fontTexture: FontImage,
+      fontColor: new THREE.Color(0x2c3e50),
+    });
+    block.add(avatarText);
+
+    // Set position after creation - to the right of description block
+    block.position.set(2.1, 2.5, 0);
+
+    return block;
+  }, []);
+
+  // Tech stack title text (floating)
+  const techStackTitle = useMemo(() => {
+    const block = new ThreeMeshUI.Block({
+      width: 3,
+      height: 0.0001, // Very thin background
+      backgroundColor: new THREE.Color(0x000000),
+      padding: 0,
+      margin: [0, 0, 0, 0],
+    });
+
+    const text = new ThreeMeshUI.Text({
+      content: "MY TECH STACK",
+      fontSize: 0.12,
+      fontFamily: FontJSON,
+      fontTexture: FontImage,
+      fontColor: new THREE.Color(0xecf0f1),
+    });
+
+    block.add(text);
+    block.position.set(0, 1.8, 0);
+
+    return block;
+  }, []);
+
+
 
   // After the UI is created, add it to the r3f scene's group
   useEffect(() => {
@@ -167,39 +373,20 @@ function PortfolioUI(props: PortfolioUIProps) {
       console.log("Adding blocks to scene");
       uiGroupRef.current.clear();
       
-      // Add each block directly to the scene
+      // Add each portfolio section directly to the scene
       uiGroupRef.current.add(headerBlock);
-      uiGroupRef.current.add(heroBlock);
-      uiGroupRef.current.add(testBlock);
+      uiGroupRef.current.add(descriptionBlock);
+      uiGroupRef.current.add(avatarBlock);
+      uiGroupRef.current.add(techStackTitle);
+      // uiGroupRef.current.add(heroBlock);
+      // uiGroupRef.current.add(aboutBlock);
+      uiGroupRef.current.add(project1ImageBlock);
+      uiGroupRef.current.add(project1DescBlock);
+      uiGroupRef.current.add(project2ImageBlock);
+      uiGroupRef.current.add(project2DescBlock);
+      uiGroupRef.current.add(contactBlock);
       
-      console.log("Blocks added to scene, uiGroupRef children:", uiGroupRef.current.children);
-
-      // Test: Add ThreeMeshUI content directly to the scene (not inside mainContainer)
-      const directTestBlock = new ThreeMeshUI.Block({ 
-      width: 1,
-        height: 0.5, 
-        backgroundColor: new THREE.Color(0x00ff00) // bright green
-      });
-      directTestBlock.position.set(2, 0, 0); // position it to the right
-      directTestBlock.add(new ThreeMeshUI.Text({
-        content: "DIRECT TEST",
-        fontSize: 0.2,
-        fontFamily: FontJSON,
-        fontTexture: FontImage,
-        fontColor: new THREE.Color(0x000000), // black text
-      }));
-      uiGroupRef.current.add(directTestBlock);
-      console.log("directTestBlock added to scene");
-
-      // Test: Add a simple visible block to verify the scene is working
-      const testSceneBlock = new ThreeMeshUI.Block({ 
-      width: 1,
-        height: 0.5, 
-        backgroundColor: new THREE.Color(0xffff00) // bright yellow
-      });
-      testSceneBlock.position.set(-2, 0, 0); // position it to the left
-      uiGroupRef.current.add(testSceneBlock);
-      console.log("testSceneBlock added to scene, total children:", uiGroupRef.current.children.length);
+      console.log("Portfolio sections added to scene, uiGroupRef children:", uiGroupRef.current.children);
     } else {
       console.log("uiGroupRef not available");
     }
@@ -209,7 +396,7 @@ function PortfolioUI(props: PortfolioUIProps) {
         uiGroupRef.current.clear();
       }
     };
-  }, [headerBlock, heroBlock, testBlock]);
+  }, [headerBlock, descriptionBlock, avatarBlock, techStackTitle, project1ImageBlock, project1DescBlock, project2ImageBlock, project2DescBlock, contactBlock]);
 
   // Update three-mesh-ui on every frame
   useFrame(() => {
