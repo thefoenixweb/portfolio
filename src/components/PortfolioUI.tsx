@@ -2,7 +2,7 @@
 
 import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Box } from '@react-three/drei';
+import { OrbitControls, Box, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import ThreeMeshUI from 'three-mesh-ui';
 
@@ -403,6 +403,114 @@ function PortfolioUI(props: PortfolioUIProps) {
     ThreeMeshUI.update();
   });
 
+
+
+  // Grid configuration
+  const gridConfig = {
+    spacing: 1, // Space between models
+    scale: [2,2,2], // Uniform scale for all models (reduced for better alignment)
+    startPosition: [-1.5, 3, 3], // Starting position for the grid
+  };
+
+
+
+  // GLB Model Component
+  function GLBModel() {
+    const { scene } = useGLTF('/1661753280.glb');
+    
+    const memoizedScene = useMemo(() => {
+      return scene.clone();
+    }, [scene]);
+    
+    const position = [gridConfig.startPosition[0] + (gridConfig.spacing * 0), gridConfig.startPosition[1], gridConfig.startPosition[2]];
+    const glbScale = [0.7,0.7,0.7]; // Smaller scale for GLB model to match others
+    
+    return (
+      <primitive 
+        object={memoizedScene} 
+        position={position} 
+        scale={glbScale} 
+        rotation={[0, 0, 0]} 
+      />
+    );
+  }
+
+  // JavaScript GLB Model Component
+  function JSModel() {
+    const { scene } = useGLTF('/JS.glb');
+    
+    const memoizedScene = useMemo(() => {
+      return scene.clone();
+    }, [scene]);
+    
+    const position = [gridConfig.startPosition[0] + (gridConfig.spacing * 1), gridConfig.startPosition[1], gridConfig.startPosition[2]];
+    
+    return (
+      <primitive 
+        object={memoizedScene} 
+        position={position} 
+        scale={gridConfig.scale} 
+        rotation={[0, 0, 0]} 
+      />
+    );
+  }
+
+  // TypeScript GLB Model Component
+  function TSModel() {
+    const { scene } = useGLTF('/TS.glb');
+    
+    const memoizedScene = useMemo(() => {
+      // Clone the scene to prevent multiple references
+      const clonedScene = scene.clone();
+      
+      // Filter out duplicate scenes - Keep only Scene_1
+      const filteredChildren = clonedScene.children.filter(child => {
+        return child.name === 'Scene_1' || 
+               child.name === 'Lighting' || 
+               child.name === 'Cameras';
+      });
+      
+      // Replace children with filtered version
+      clonedScene.children.length = 0;
+      filteredChildren.forEach(child => {
+        clonedScene.add(child);
+      });
+      
+      return clonedScene;
+    }, [scene]);
+    
+    const position = [gridConfig.startPosition[0] + (gridConfig.spacing * 2), gridConfig.startPosition[1], gridConfig.startPosition[2]];
+    
+    return (
+      <primitive 
+        object={memoizedScene} 
+        position={position} 
+        scale={gridConfig.scale} 
+        rotation={[0, 0, 0]} 
+      />
+    );
+  }
+
+  // C# GLB Model Component
+  function CSModel() {
+    const { scene } = useGLTF('/CS.glb');
+    
+    const memoizedScene = useMemo(() => {
+      return scene.clone();
+    }, [scene]);
+    
+    const position = [gridConfig.startPosition[0] + (gridConfig.spacing * 3), gridConfig.startPosition[1], gridConfig.startPosition[2]];
+    
+    return (
+      <primitive 
+        object={memoizedScene} 
+        position={position} 
+        scale={gridConfig.scale} 
+        rotation={[0, 0, 0]} 
+      />
+    );
+  }
+
   return (
     <>
       {/* This group holds your entire three-mesh-ui structure */}
@@ -410,11 +518,16 @@ function PortfolioUI(props: PortfolioUIProps) {
         {/* The actual ThreeMeshUI objects are added to uiGroupRef.current programmatically */}
       </group>
 
-      {/* Basic scene setup for demonstration */}
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} />
-      {/* A simple room for context */}
-      <Box args={[6, 6, 6]} position={[0, 3, 0]} material-wireframe material-color="gray" />
+            {/* GLB Models */}
+      <GLBModel key="glb-model-1" />
+      <JSModel key="js-model-2" />
+      <TSModel key="ts-model-3" />
+      <CSModel key="cs-model-4" />
+
+      {/* Enhanced lighting for GLB models */}
+      <ambientLight intensity={0.8} />
+      <directionalLight position={[5, 5, 5]} intensity={1} />
+      <pointLight position={[10, 10, 10]} intensity={0.5} />
 
       {/* OrbitControls to navigate the scene */}
       <OrbitControls makeDefault />

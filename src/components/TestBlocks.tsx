@@ -5,10 +5,209 @@ import { useFrame } from '@react-three/fiber';
 import { OrbitControls, Box } from '@react-three/drei';
 import * as THREE from 'three';
 import ThreeMeshUI from 'three-mesh-ui';
+import { useThree } from '@react-three/fiber';
 
 // Font files should be in public folder and referenced as absolute paths
 const FontJSON = "/Roboto-msdf.json";
 const FontImage = "/Roboto-msdf.png";
+
+// Test blocks for debugging
+export const directTestBlock = (
+  <Box args={[0.5, 0.5, 0.5]} position={[5, 5, 0]} material-color="green" />
+);
+
+export const testSceneBlock = (
+  <Box args={[0.5, 0.5, 0.5]} position={[5, 4, 0]} material-color="yellow" />
+);
+
+export const testBlock1 = (
+  <Box args={[0.5, 0.5, 0.5]} position={[5, 3, 0]} material-color="red" />
+);
+
+export const testBlock2 = (
+  <Box args={[0.5, 0.5, 0.5]} position={[5, 2, 0]} material-color="blue" />
+);
+
+export const testTextBlock = (
+  <Box args={[0.5, 0.5, 0.5]} position={[5, 1, 0]} material-color="yellow" />
+);
+
+export const testFloatingText = (
+  <Box args={[0.5, 0.5, 0.5]} position={[5, 0, 0]} material-color="red" />
+);
+
+// Debug functions moved from PortfolioUI.tsx
+export const useSceneDebugger = () => {
+  const { scene } = useThree();
+
+  // Test function to count models in scene
+  useEffect(() => {
+    const testScene = () => {
+      console.log('=== SCENE TEST ===');
+      console.log('Total objects in scene:', scene.children.length);
+      
+      // Count GLB models
+      let glbCount = 0;
+      let jsCount = 0;
+      let tsCount = 0;
+      
+      scene.traverse((child) => {
+        if (child.type === 'Group' && child.children.length > 0) {
+          // Check if this looks like a GLB model
+          const hasMeshes = child.children.some(grandChild => grandChild.type === 'Mesh');
+          if (hasMeshes) {
+            console.log(`Found GLB model: ${child.uuid} at position:`, child.position);
+            console.log(`  Instance ID:`, child.userData?.instanceId || 'No ID');
+            console.log(`  Children count:`, child.children.length);
+            console.log(`  Parent:`, child.parent?.name || 'No parent');
+            
+            // Check if this is a JS model by looking for specific characteristics
+            const hasJSLogo = child.children.some(grandChild => 
+              grandChild.name && grandChild.name.includes('LOGO')
+            );
+            
+            // Also check for JS model characteristics
+            const hasJSBack = child.children.some(grandChild => 
+              grandChild.name && grandChild.name.includes('back')
+            );
+            
+            if (hasJSLogo || hasJSBack) {
+              jsCount++;
+              console.log(`  *** This is a JS model ***`);
+              console.log(`  *** JS Model Details ***`);
+              console.log(`    Position:`, child.position);
+              console.log(`    Scale:`, child.scale);
+              console.log(`    Rotation:`, child.rotation);
+              console.log(`    Children names:`, child.children.map(c => c.name));
+            } else {
+              glbCount++;
+            }
+            
+            // DEEPER SCAN: Check inside this group for JS models
+            child.traverse((grandChild) => {
+              if (grandChild.type === 'Group' && grandChild.children.length > 0) {
+                const hasJSLogoDeep = grandChild.children.some(greatGrandChild => 
+                  greatGrandChild.name && greatGrandChild.name.includes('LOGO')
+                );
+                const hasJSBackDeep = grandChild.children.some(greatGrandChild => 
+                  greatGrandChild.name && greatGrandChild.name.includes('back')
+                );
+                
+                if (hasJSLogoDeep || hasJSBackDeep) {
+                  jsCount++;
+                  console.log(`  *** Found JS model INSIDE another model ***`);
+                  console.log(`    Nested JS Model UUID:`, grandChild.uuid);
+                  console.log(`    Nested JS Model Position:`, grandChild.position);
+                  console.log(`    Nested JS Model Parent:`, grandChild.parent?.name || 'No parent');
+                  console.log(`    Nested JS Model Children:`, grandChild.children.map(c => c.name));
+                }
+              }
+            });
+          }
+        }
+      });
+      
+      console.log('GLB models found:', glbCount);
+      console.log('JS models found:', jsCount);
+      console.log('TS models found:', tsCount);
+      console.log('=== END TEST ===');
+    };
+    
+    // Run test after a delay to ensure models are loaded
+    const timer = setTimeout(testScene, 2000);
+    return () => clearTimeout(timer);
+  }, [scene]);
+};
+
+// GLB Analysis Function
+export const analyzeGLB = (scene: THREE.Group, modelName: string) => {
+  console.log(`=== ${modelName} GLB ANALYSIS ===`);
+  console.log('Scene children count:', scene.children.length);
+  console.log('Scene name:', scene.name);
+  console.log('Scene UUID:', scene.uuid);
+  
+  let meshCount = 0;
+  let geometryCount = 0;
+  let materialCount = 0;
+  const geometries = new Set();
+  const materials = new Set();
+  
+  scene.traverse((child) => {
+    console.log(`Child: ${child.name} (${child.type}) - UUID: ${child.uuid}`);
+    
+    if (child.type === 'Mesh') {
+      meshCount++;
+      const mesh = child as THREE.Mesh;
+      console.log(`  Mesh geometry: ${mesh.geometry.uuid}`);
+      console.log(`  Mesh material: ${Array.isArray(mesh.material) ? mesh.material.length : 1} materials`);
+      
+      geometries.add(mesh.geometry.uuid);
+      if (Array.isArray(mesh.material)) {
+        mesh.material.forEach(mat => materials.add(mat.uuid));
+      } else {
+        materials.add(mesh.material.uuid);
+      }
+    }
+  });
+  
+  console.log(`Mesh count: ${meshCount}`);
+  console.log(`Unique geometries: ${geometries.size}`);
+  console.log(`Unique materials: ${materials.size}`);
+  console.log(`=== END ${modelName} ANALYSIS ===`);
+};
+
+// Debug box component for testing
+export const DebugBox = () => {
+  const { scene } = useThree();
+
+  return (
+    <Box 
+      args={[0.5, 0.5, 0.5]} 
+      position={[20, 20, 0]} 
+      material-color="purple"
+      onClick={() => {
+        console.log('=== GHOST MODEL INVESTIGATION ===');
+        
+        // Inspect the entire scene
+        console.log('Total scene children:', scene.children.length);
+        
+        scene.children.forEach((child, index) => {
+          console.log(`Child ${index}:`, child.name, child.type, child.position);
+          if (child.children.length > 0) {
+            console.log(`  - Has ${child.children.length} children`);
+          }
+        });
+      }}
+    />
+  );
+};
+
+// Clear scene debug box
+export const ClearSceneBox = () => {
+  const { scene } = useThree();
+
+  return (
+    <Box 
+      args={[1, 1, 1]} 
+      position={[10, 10, 0]} 
+      material-color="yellow"
+      onClick={() => {
+        console.log('=== CLEARING SCENE ===');
+        scene.traverse((child) => {
+          if (child.type === 'Group' && child.children.length > 0) {
+            const hasJSLogo = child.children.some(grandChild => 
+              grandChild.name && grandChild.name.includes('LOGO')
+            );
+            if (hasJSLogo) {
+              console.log('Removing JS model:', child.uuid);
+              scene.remove(child);
+            }
+          }
+        });
+      }}
+    />
+  );
+};
 
 function TestBlocks() {
   const uiGroupRef = useRef<THREE.Group>(null);
