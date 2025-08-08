@@ -2,13 +2,15 @@
 
 import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Box, useGLTF } from '@react-three/drei';
+import { OrbitControls, Box, useGLTF, useScroll } from '@react-three/drei';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import ThreeMeshUI from 'three-mesh-ui';
-
+import gsap from 'gsap';
 
 import Project1Image from '../assets/project1.png';
 import Project2Image from '../assets/project2.png';
+// HTML overlay removed - keeping only 3D scene content
 
 // Define types for your form data
 interface FormData {
@@ -26,7 +28,9 @@ interface PortfolioUIProps {
 function PortfolioUI(props: PortfolioUIProps) {
   // Specify the type for useRef: THREE.Group is a common parent for objects in Three.js
   const uiGroupRef = useRef<THREE.Group>(null);
-  const { scene } = useThree();
+  const { scene, camera } = useThree();
+  const scroll = useScroll();
+  const tl = useRef<gsap.core.Timeline | null>(null);
 
   // State for form data (for demonstration, actual input requires more)
   const [formData, setFormData] = useState<FormData>({
@@ -73,7 +77,7 @@ function PortfolioUI(props: PortfolioUIProps) {
   const FontJSON = "/Roboto-msdf.json";
   const FontImage = "/Roboto-msdf.png";
   
-    // Create actual portfolio sections
+  // Create actual portfolio sections
   const headerBlock = useMemo(() => {
     const block = new ThreeMeshUI.Block({
       width: 6,
@@ -85,7 +89,7 @@ function PortfolioUI(props: PortfolioUIProps) {
       alignItems: "center",
     });
     // Set position after creation
-    block.position.set(0, 3.5, 0); // moved up to align with top of scene
+    block.position.set(0, 1, 0); // Header moved down one more unit
 
     // Add name
     const nameText = new ThreeMeshUI.Text({
@@ -109,180 +113,7 @@ function PortfolioUI(props: PortfolioUIProps) {
     block.add(navText);
 
     return block;
-  }, [formData]);
-
-  // const heroBlock = useMemo(() => {
-  //   const block = new ThreeMeshUI.Block({
-  //     width: 5,
-  //     height: 1.2,
-  //     padding: 0.1,
-  //     backgroundColor: new THREE.Color(0x3498db), // blue
-  //     contentDirection: "column",
-  //     justifyContent: "center",
-  //     alignItems: "center",
-  //   });
-  //   // Set position after creation
-  //   block.position.set(0, 2.5, 0); // moved up to follow header
-
-  //   const heroTitle = new ThreeMeshUI.Text({
-  //     content: "Web Developer & Security Analyst",
-  //     fontSize: 0.12,
-  //     fontFamily: FontJSON,
-  //     fontTexture: FontImage,
-  //     fontColor: new THREE.Color(0xffffff),
-  //   });
-  //   block.add(heroTitle);
-
-  //   return block;
-  // }, [formData]);
-
-  // const aboutBlock = useMemo(() => {
-  //   const block = new ThreeMeshUI.Block({
-  //     width: 4.5,
-  //     height: 1.0,
-  //     padding: 0.08,
-  //     backgroundColor: new THREE.Color(0xe74c3c), // red
-  //     contentDirection: "column",
-  //     justifyContent: "center",
-  //     alignItems: "center",
-  //   });
-  //   // Set position after creation
-  //   block.position.set(0, 1.5, 0); // moved up to follow hero
-
-  //   const aboutTitle = new ThreeMeshUI.Text({
-  //     content: "About Me",
-  //     fontSize: 0.12,
-  //     fontFamily: FontJSON,
-  //     fontTexture: FontImage,
-  //     fontColor: new THREE.Color(0xffffff),
-  //   });
-  //   block.add(aboutTitle);
-
-  //   return block;
-  // }, [formData]);
-
-  // Create individual project blocks (flattened approach)
-  const project1ImageBlock = useMemo(() => {
-    // Create the image mesh directly without a background block
-    const texture = new THREE.TextureLoader().load(Project1Image);
-    const geometry = new THREE.PlaneGeometry(1.5, 0.8);
-    const material = new THREE.MeshBasicMaterial({ map: texture });
-    const projectImage = new THREE.Mesh(geometry, material);
-    projectImage.position.set(-1.5, 0.5, 0.1); // left side of project area
-    
-    return projectImage;
-  }, [formData]);
-
-  const project1DescBlock = useMemo(() => {
-    const block = new ThreeMeshUI.Block({
-      width: 2.5,
-      height: 0.8,
-      backgroundColor: new THREE.Color(0x2ecc71), // lighter green
-    });
-    // Set position after creation
-    block.position.set(1.0, 0.5, 0.1); // right side of project area
-
-    const projectTitle = new ThreeMeshUI.Text({
-      content: "Portfolio Website",
-      fontSize: 0.1,
-      fontFamily: FontJSON,
-      fontTexture: FontImage,
-      fontColor: new THREE.Color(0xffffff),
-    });
-    block.add(projectTitle);
-
-    const projectDesc = new ThreeMeshUI.Text({
-      content: "3D Interactive Portfolio built with React Three Fiber and ThreeMeshUI",
-      fontSize: 0.07,
-      fontFamily: FontJSON,
-      fontTexture: FontImage,
-      fontColor: new THREE.Color(0xecf0f1),
-    });
-    block.add(projectDesc);
-
-    return block;
-  }, [formData]);
-
-  const project2ImageBlock = useMemo(() => {
-    // Create the image mesh directly without a background block
-    const texture = new THREE.TextureLoader().load(Project2Image);
-    const geometry = new THREE.PlaneGeometry(1.5, 0.8);
-    const material = new THREE.MeshBasicMaterial({ map: texture });
-    const projectImage = new THREE.Mesh(geometry, material);
-    projectImage.position.set(-1.5, -0.5, 0.1); // left side of project area
-    
-    return projectImage;
-  }, [formData]);
-
-  const project2DescBlock = useMemo(() => {
-    const block = new ThreeMeshUI.Block({
-      width: 2.5,
-      height: 0.8,
-      backgroundColor: new THREE.Color(0x2ecc71), // lighter green
-    });
-    // Set position after creation
-    block.position.set(1.0, -0.5, 0.1); // right side of project area
-
-    const projectTitle = new ThreeMeshUI.Text({
-      content: "Web Application",
-      fontSize: 0.1,
-      fontFamily: FontJSON,
-      fontTexture: FontImage,
-      fontColor: new THREE.Color(0xffffff),
-    });
-    block.add(projectTitle);
-
-    const projectDesc = new ThreeMeshUI.Text({
-      content: "Full-stack web application with modern UI/UX design",
-      fontSize: 0.07,
-      fontFamily: FontJSON,
-      fontTexture: FontImage,
-      fontColor: new THREE.Color(0xecf0f1),
-    });
-    block.add(projectDesc);
-
-    return block;
-  }, [formData]);
-
-  const contactBlock = useMemo(() => {
-    const block = new ThreeMeshUI.Block({
-      width: 6,
-      height: 0.8,
-      padding: 0.1,
-      backgroundColor: new THREE.Color(0x2c3e50), // dark blue-gray to match header
-      contentDirection: "row",
-      justifyContent: "start",
-      alignItems: "center",
-    });
-    // Set position after creation
-    block.position.set(0, -2.5, 0); // positioned at bottom as footer
-
-    // Email section
-    const emailText = new ThreeMeshUI.Text({
-      content: "tshepiso.molefi@yahoo.com",
-      fontSize: 0.08,
-      fontFamily: FontJSON,
-      fontTexture: FontImage,
-      fontColor: new THREE.Color(0xecf0f1),
-    });
-    // Position email text to the left within footer bounds
-    emailText.position.set(-1.5, 0, 0);
-    block.add(emailText);
-
-    // GitHub section
-    const githubText = new ThreeMeshUI.Text({
-      content: "GitHub: @thefoenixweb",
-      fontSize: 0.08,
-      fontFamily: FontJSON,
-      fontTexture: FontImage,
-      fontColor: new THREE.Color(0xecf0f1),
-    });
-    // Position GitHub text to the right within footer bounds
-    githubText.position.set(1.5, 0, 0);
-    block.add(githubText);
-
-    return block;
-  }, [formData]);
+  }, []); // Remove formData dependency since it's not used in the header
 
   // Description block
   const descriptionBlock = useMemo(() => {
@@ -304,7 +135,7 @@ function PortfolioUI(props: PortfolioUIProps) {
     block.add(descriptionText);
 
     // Set position after creation
-    block.position.set(-0.8, 2.5, 0);
+    block.position.set(0, 0, 0); // Description block moved down one more unit
 
     return block;
   }, []);
@@ -335,7 +166,7 @@ function PortfolioUI(props: PortfolioUIProps) {
     block.add(avatarText);
 
     // Set position after creation - to the right of description block
-    block.position.set(2.1, 2.5, 0);
+    block.position.set(2.1, 0, 0); // Avatar aligned with description block
 
     return block;
   }, []);
@@ -359,18 +190,247 @@ function PortfolioUI(props: PortfolioUIProps) {
     });
 
     block.add(text);
-    block.position.set(0, 1.8, 0);
+    block.position.set(0, -1.5, 0); // Tech stack title moved down one more unit
 
     return block;
   }, []);
 
+  // Create nested project container (similar to the example code structure)
+  const projectContainer = useMemo(() => {
+    const container = new ThreeMeshUI.Block({
+      ref: "project-container",
+      width: 4,
+      height: 1.5,
+      padding: 0.025,
+      fontFamily: FontJSON,
+      fontTexture: FontImage,
+      fontColor: new THREE.Color(0xffffff),
+      backgroundOpacity: 0,
+    });
 
+    container.position.set(0, -3, 0.1); // Project container moved down one more unit
+    container.rotation.x = -0.55; // Add tilt for 3D feel like the viper example
+
+    // Project title block
+    const title = new ThreeMeshUI.Block({
+      height: 0.2,
+      width: 1.5,
+      margin: 0.025,
+      justifyContent: "center",
+      fontSize: 0.09,
+    });
+
+    title.add(
+      new ThreeMeshUI.Text({
+        content: "Portfolio Website",
+      })
+    );
+
+    container.add(title);
+
+    // Left sub-block for project image
+    const leftSubBlock = new ThreeMeshUI.Block({
+      height: 0.95,
+      width: 1.0,
+      margin: 0.025,
+      padding: 0.025,
+      textAlign: "left",
+      justifyContent: "end",
+    });
+
+    const caption = new ThreeMeshUI.Block({
+      height: 0.07,
+      width: 0.37,
+      textAlign: "center",
+      justifyContent: "center",
+    });
+
+    caption.add(
+      new ThreeMeshUI.Text({
+        content: "3D Interactive Portfolio",
+        fontSize: 0.04,
+      })
+    );
+
+    leftSubBlock.add(caption);
+
+    // Right sub-block for project description
+    const rightSubBlock = new ThreeMeshUI.Block({
+      width: 2.5,
+      height: 0.95,
+      margin: 0.025,
+    });
+
+    const subSubBlock1 = new ThreeMeshUI.Block({
+      height: 0.35,
+      width: 0.5,
+      margin: 0.025,
+      padding: 0.02,
+      fontSize: 0.04,
+      justifyContent: "center",
+      backgroundOpacity: 0,
+    }).add(
+      new ThreeMeshUI.Text({
+        content: "Built  React Three Fiber and ",
+      }),
+
+      new ThreeMeshUI.Text({
+        content: "ThreeMeshUI",
+        fontColor: new THREE.Color(0x92e66c),
+      }),
+
+      new ThreeMeshUI.Text({
+        content: " for immersive 3D experience.",
+      })
+    );
+
+    const subSubBlock2 = new ThreeMeshUI.Block({
+      height: 0.53,
+      width: 0.5,
+      margin: 0.01,
+      padding: 0.02,
+      fontSize: 0.025,
+      alignItems: "start",
+      textAlign: 'justify',
+      backgroundOpacity: 0,
+    }).add(
+      new ThreeMeshUI.Text({
+        content:
+          "This portfolio showcases my skills in modern web development, 3D graphics, and interactive design. Features include dynamic UI elements, 3D models, and responsive design principles. The project demonstrates proficiency in React, Three.js, and TypeScript.",
+      })
+    );
+
+    rightSubBlock.add(subSubBlock1, subSubBlock2);
+
+    // Content container to hold left and right sub-blocks
+    const contentContainer = new ThreeMeshUI.Block({
+      width: 4,
+      height: 1,
+      contentDirection: "row",
+      padding: 0.02,
+      margin: 0.025,
+      backgroundOpacity: 0,
+    });
+
+    contentContainer.add(leftSubBlock, rightSubBlock);
+    container.add(contentContainer);
+
+    // Load project image texture
+    new THREE.TextureLoader().load(Project1Image, (texture) => {
+      // @ts-ignore - ThreeMeshUI set method
+      leftSubBlock.set({
+        backgroundTexture: texture,
+      });
+    });
+
+    return container;
+  }, []); // Remove formData dependency since it's not used in the container
+
+  const contactBlock = useMemo(() => {
+    const block = new ThreeMeshUI.Block({
+      width: 6,
+      height: 0.8,
+      padding: 0.1,
+      backgroundColor: new THREE.Color(0x2c3e50), // dark blue-gray to match header
+      contentDirection: "row",
+      justifyContent: "start",
+      alignItems: "center",
+    });
+    // Set position after creation
+    block.position.set(0, -4.5, 0); // Contact block moved down one more unit
+
+    // Email section
+    const emailText = new ThreeMeshUI.Text({
+      content: "tshepiso.molefi@yahoo.com",
+      fontSize: 0.08,
+      fontFamily: FontJSON,
+      fontTexture: FontImage,
+      fontColor: new THREE.Color(0xecf0f1),
+    });
+    // Position email text to the left within footer bounds
+    emailText.position.set(-1.5, 0, 0);
+    block.add(emailText);
+
+    // GitHub section
+    const githubText = new ThreeMeshUI.Text({
+      content: "GitHub: @thefoenixweb",
+      fontSize: 0.08,
+      fontFamily: FontJSON,
+      fontTexture: FontImage,
+      fontColor: new THREE.Color(0xecf0f1),
+    });
+    // Position GitHub text to the right within footer bounds
+    githubText.position.set(1.5, 0, 0);
+    block.add(githubText);
+
+    return block;
+  }, []); // Remove formData dependency since it's not used in the contact block
+
+  // Grid configuration - positioned under tech stack title
+  const gridConfig = {
+    spacing: 1, // Space between models
+    scale: [2,2,2], // Uniform scale for all models (reduced for better alignment)
+    startPosition: [-1.5,-0.4,3], // Positioned under the tech stack title
+  };
+
+  // Scroll-based animations
+  useEffect(() => {
+    if (!tl.current) {
+      tl.current = gsap.timeline();
+    }
+
+    // Camera movement based on scroll - CORRECT direction
+    if (tl.current) {
+      tl.current.to(
+        camera.position,
+        {
+          duration: 2,
+          y: -3, // Move camera down as we scroll down (natural)
+          z: 6, // Move camera closer as we scroll down
+        },
+        0
+      );
+    }
+
+    // UI group movement - CORRECT direction
+    if (uiGroupRef.current) {
+      tl.current.to(
+        uiGroupRef.current.position,
+        {
+          duration: 2,
+          y: 6, // Move UI up as we scroll down (natural)
+        },
+        0
+      );
+    }
+
+    // Tech stack models animation - REMOVED to keep models in fixed position
+    // if (tl.current) {
+    //   tl.current.to(
+    //     gridConfig,
+    //     {
+    //       duration: 1,
+    //       startPosition: [-1.5, -2, 3], // Move models down
+    //     },
+    //     0.5
+    //   );
+    // }
+
+  }, []);
+
+  // Apply scroll-based animations
+  useFrame(() => {
+    if (tl.current) {
+      tl.current.seek(scroll.offset * tl.current.duration());
+    }
+  });
 
   // After the UI is created, add it to the r3f scene's group
   useEffect(() => {
     console.log("useEffect running, adding blocks to scene");
     if (uiGroupRef.current) {
       console.log("Adding blocks to scene");
+      // Clear any existing blocks to prevent duplicates
       uiGroupRef.current.clear();
       
       // Add each portfolio section directly to the scene
@@ -380,11 +440,69 @@ function PortfolioUI(props: PortfolioUIProps) {
       uiGroupRef.current.add(techStackTitle);
       // uiGroupRef.current.add(heroBlock);
       // uiGroupRef.current.add(aboutBlock);
-      uiGroupRef.current.add(project1ImageBlock);
-      uiGroupRef.current.add(project1DescBlock);
-      uiGroupRef.current.add(project2ImageBlock);
-      uiGroupRef.current.add(project2DescBlock);
+      uiGroupRef.current.add(projectContainer);
+      // uiGroupRef.current.add(project1ImageBlock);
+      // uiGroupRef.current.add(project1DescBlock);
+      // uiGroupRef.current.add(project2ImageBlock);
+      // uiGroupRef.current.add(project2DescBlock);
       uiGroupRef.current.add(contactBlock);
+      
+      // Add 3D models to the scene programmatically (not as JSX)
+      console.log("Attempting to add 3D models to scene...");
+      const modelsGroup = new THREE.Group();
+      modelsGroup.position.set(0, -2, 0);
+      console.log("Created models group at position:", modelsGroup.position);
+      
+      try {
+        // Create and add GLB models to the group
+        console.log("Loading GLB models...");
+        
+        // Load GLB models using GLTFLoader
+        const loader = new GLTFLoader();
+        
+        // Load React model (1661753280.glb)
+        loader.load('/1661753280.glb', (gltf: any) => {
+          const glbScene = gltf.scene.clone();
+          glbScene.position.set(-1.5, 0, 0);
+          glbScene.scale.set(0.7, 0.7, 0.7);
+          modelsGroup.add(glbScene);
+          console.log("Added React model at position:", glbScene.position);
+        });
+        
+        // Load JavaScript model
+        loader.load('/JS.glb', (gltf: any) => {
+          const jsScene = gltf.scene.clone();
+          jsScene.position.set(-0.5, 0, 0);
+          jsScene.scale.set(2, 2, 2);
+          modelsGroup.add(jsScene);
+          console.log("Added JS model at position:", jsScene.position);
+        });
+        
+        // Load TypeScript model
+        loader.load('/TS.glb', (gltf: any) => {
+          const tsScene = gltf.scene.clone();
+          tsScene.position.set(0.5, 0, 0);
+          tsScene.scale.set(2, 2, 2);
+          modelsGroup.add(tsScene);
+          console.log("Added TS model at position:", tsScene.position);
+        });
+        
+        // Load C# model
+        loader.load('/CS.glb', (gltf: any) => {
+          const csScene = gltf.scene.clone();
+          csScene.position.set(1.5, 0, 0);
+          csScene.scale.set(2, 2, 2);
+          modelsGroup.add(csScene);
+          console.log("Added CS model at position:", csScene.position);
+        });
+        
+        uiGroupRef.current.add(modelsGroup);
+        console.log("Successfully added models group to uiGroupRef");
+        console.log("uiGroupRef children count:", uiGroupRef.current.children.length);
+        
+      } catch (error) {
+        console.error("Error adding 3D models:", error);
+      }
       
       console.log("Portfolio sections added to scene, uiGroupRef children:", uiGroupRef.current.children);
     } else {
@@ -396,23 +514,12 @@ function PortfolioUI(props: PortfolioUIProps) {
         uiGroupRef.current.clear();
       }
     };
-  }, [headerBlock, descriptionBlock, avatarBlock, techStackTitle, project1ImageBlock, project1DescBlock, project2ImageBlock, project2DescBlock, contactBlock]);
+  }, [headerBlock, descriptionBlock, avatarBlock, techStackTitle, projectContainer, contactBlock]);
 
   // Update three-mesh-ui on every frame
   useFrame(() => {
     ThreeMeshUI.update();
   });
-
-
-
-  // Grid configuration
-  const gridConfig = {
-    spacing: 1, // Space between models
-    scale: [2,2,2], // Uniform scale for all models (reduced for better alignment)
-    startPosition: [-1.5, 3, 3], // Starting position for the grid
-  };
-
-
 
   // GLB Model Component
   function GLBModel() {
@@ -422,7 +529,7 @@ function PortfolioUI(props: PortfolioUIProps) {
       return scene.clone();
     }, [scene]);
     
-    const position = [gridConfig.startPosition[0] + (gridConfig.spacing * 0), gridConfig.startPosition[1], gridConfig.startPosition[2]];
+    const position = [-1.5, 0, 0]; // Position relative to group
     const glbScale = [0.7,0.7,0.7]; // Smaller scale for GLB model to match others
     
     return (
@@ -443,13 +550,13 @@ function PortfolioUI(props: PortfolioUIProps) {
       return scene.clone();
     }, [scene]);
     
-    const position = [gridConfig.startPosition[0] + (gridConfig.spacing * 1), gridConfig.startPosition[1], gridConfig.startPosition[2]];
+    const position = [-0.5, 0, 0]; // Position relative to group
     
     return (
       <primitive 
         object={memoizedScene} 
         position={position} 
-        scale={gridConfig.scale} 
+        scale={[2,2,2]} 
         rotation={[0, 0, 0]} 
       />
     );
@@ -479,13 +586,13 @@ function PortfolioUI(props: PortfolioUIProps) {
       return clonedScene;
     }, [scene]);
     
-    const position = [gridConfig.startPosition[0] + (gridConfig.spacing * 2), gridConfig.startPosition[1], gridConfig.startPosition[2]];
+    const position = [0.5, 0, 0]; // Position relative to group
     
     return (
       <primitive 
         object={memoizedScene} 
         position={position} 
-        scale={gridConfig.scale} 
+        scale={[2,2,2]} 
         rotation={[0, 0, 0]} 
       />
     );
@@ -499,13 +606,13 @@ function PortfolioUI(props: PortfolioUIProps) {
       return scene.clone();
     }, [scene]);
     
-    const position = [gridConfig.startPosition[0] + (gridConfig.spacing * 3), gridConfig.startPosition[1], gridConfig.startPosition[2]];
+    const position = [1.5, 0, 0]; // Position relative to group
     
     return (
       <primitive 
         object={memoizedScene} 
         position={position} 
-        scale={gridConfig.scale} 
+        scale={[2,2,2]} 
         rotation={[0, 0, 0]} 
       />
     );
@@ -518,33 +625,16 @@ function PortfolioUI(props: PortfolioUIProps) {
         {/* The actual ThreeMeshUI objects are added to uiGroupRef.current programmatically */}
       </group>
 
-            {/* GLB Models */}
-      <GLBModel key="glb-model-1" />
-      <JSModel key="js-model-2" />
-      <TSModel key="ts-model-3" />
-      <CSModel key="cs-model-4" />
+      {/* 3D Models are now added programmatically to uiGroupRef */}
 
       {/* Enhanced lighting for GLB models */}
       <ambientLight intensity={0.8} />
       <directionalLight position={[5, 5, 5]} intensity={1} />
       <pointLight position={[10, 10, 10]} intensity={0.5} />
 
-      {/* OrbitControls to navigate the scene */}
-      <OrbitControls makeDefault />
+      {/* OrbitControls handled in App.tsx */}
     </>
   );
 }
-
-// Main App component to render the Canvas
-// export default function AppCanvas() {
-//     return (
-//         <div style={{ width: '100vw', height: '100vh', background: '#505050' }}> {/* Add background for clarity */}
-//             <Canvas camera={{ position: [0, 1.6, 0], fov: 60 }}>
-//                 {/* No need for color attach="background" if you set it on the div */}
-//                 <PortfolioUI />
-//             </Canvas>
-//         </div>
-//     );
-// }
 
 export default PortfolioUI;
