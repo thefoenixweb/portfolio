@@ -8,7 +8,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import ThreeMeshUI from 'three-mesh-ui';
 import gsap from 'gsap';
 
-import Project1Image from '../assets/project1.png';
+import FinanceAppImage from '../assets/FinanceApp.png';
+import FitTrackImage from '../assets/fittrack.png';
 import Project2Image from '../assets/project2.png';
 // HTML overlay removed - keeping only 3D scene content
 
@@ -77,13 +78,13 @@ function PortfolioUI(props: PortfolioUIProps) {
   const FontJSON = "/Roboto-msdf.json";
   const FontImage = "/Roboto-msdf.png";
   
-  // Create actual portfolio sections
+    // Create actual portfolio sections
   const headerBlock = useMemo(() => {
     const block = new ThreeMeshUI.Block({
       width: 6,
       height: 0.6,
       padding: 0.05,
-      backgroundColor: new THREE.Color(0x2c3e50), // dark blue-gray
+      backgroundOpacity: 0.3, // Transparent like project blocks
       contentDirection: "row",
       justifyContent: "start",
       alignItems: "center",
@@ -94,7 +95,7 @@ function PortfolioUI(props: PortfolioUIProps) {
     // Add name
     const nameText = new ThreeMeshUI.Text({
       content: "Tshepiso Molefi",
-      fontSize: 0.12,
+      fontSize: 0.2,
       fontFamily: FontJSON,
       fontTexture: FontImage,
       fontColor: new THREE.Color(0xffffff),
@@ -102,7 +103,7 @@ function PortfolioUI(props: PortfolioUIProps) {
     block.add(nameText);
 
     // Add navigation items (simplified to avoid text rendering issues)
-    const navText = new ThreeMeshUI.Text({
+   /*  const navText = new ThreeMeshUI.Text({
       content: "About | Projects | Skills | Contact",
       fontSize: 0.08,
       fontFamily: FontJSON,
@@ -110,7 +111,7 @@ function PortfolioUI(props: PortfolioUIProps) {
       fontColor: new THREE.Color(0xecf0f1),
       margin: [0, 0.05, 0, 0],
     });
-    block.add(navText);
+    block.add(navText); */
 
     return block;
   }, []); // Remove formData dependency since it's not used in the header
@@ -120,14 +121,14 @@ function PortfolioUI(props: PortfolioUIProps) {
     const block = new ThreeMeshUI.Block({
       width: 4,
       height: 1,
-      backgroundColor: new THREE.Color(0x34495e),
+      backgroundOpacity: 0, // Transparent like project blocks
       padding: 0.1,
       margin: [0, 0.1, 0, 0],
     });
 
     const descriptionText = new ThreeMeshUI.Text({
       content: "I am a web developer who enjoys creating fintech apps and 3d web apps. I know, C#, javascript and typescript. The libraries I use to build these apps are react, asp core and threejs.",
-      fontSize: 0.06,
+      fontSize: 0.1,
       fontFamily: FontJSON,
       fontTexture: FontImage,
       fontColor: new THREE.Color(0xecf0f1),
@@ -135,41 +136,15 @@ function PortfolioUI(props: PortfolioUIProps) {
     block.add(descriptionText);
 
     // Set position after creation
-    block.position.set(0, 0, 0); // Description block moved down one more unit
+    block.position.set(-1, -1, 0); // Description block moved down to make room for header
 
     return block;
   }, []);
 
   // Helper function to create circular blocks
-  const createCircularBlock = (size: number, backgroundColor: THREE.Color) => {
-    return new ThreeMeshUI.Block({
-      width: size,
-      height: size,
-      backgroundColor,
-      borderRadius: size / 2, // Automatically makes it circular
-      padding: 0.05,
-      margin: [0, 0.1, 0, 0],
-    });
-  };
 
-  // Avatar placeholder block
-  const avatarBlock = useMemo(() => {
-    const block = createCircularBlock(1.2, new THREE.Color(0x95a5a6));
 
-    const avatarText = new ThreeMeshUI.Text({
-      content: "TM",
-      fontSize: 0.3,
-      fontFamily: FontJSON,
-      fontTexture: FontImage,
-      fontColor: new THREE.Color(0x2c3e50),
-    });
-    block.add(avatarText);
 
-    // Set position after creation - to the right of description block
-    block.position.set(2.1, 0, 0); // Avatar aligned with description block
-
-    return block;
-  }, []);
 
   // Tech stack title text (floating)
   const techStackTitle = useMemo(() => {
@@ -190,7 +165,7 @@ function PortfolioUI(props: PortfolioUIProps) {
     });
 
     block.add(text);
-    block.position.set(0, -1.5, 0); // Tech stack title moved down one more unit
+    block.position.set(0, -2.5, 0); // Tech stack title moved down to make room for header
 
     return block;
   }, []);
@@ -208,7 +183,7 @@ function PortfolioUI(props: PortfolioUIProps) {
       backgroundOpacity: 0,
     });
 
-    container.position.set(0, -3, 0.1); // Project container moved down one more unit
+    container.position.set(0, -4, 0.1); // Finance App project moved down to make room for header
     container.rotation.x = -0.55; // Add tilt for 3D feel like the viper example
 
     // Project title block
@@ -222,7 +197,7 @@ function PortfolioUI(props: PortfolioUIProps) {
 
     title.add(
       new ThreeMeshUI.Text({
-        content: "Portfolio Website",
+        content: "Finance App",
       })
     );
 
@@ -247,7 +222,7 @@ function PortfolioUI(props: PortfolioUIProps) {
 
     caption.add(
       new ThreeMeshUI.Text({
-        content: "3D Interactive Portfolio",
+        content: "Financial Management App",
         fontSize: 0.04,
       })
     );
@@ -271,32 +246,32 @@ function PortfolioUI(props: PortfolioUIProps) {
       backgroundOpacity: 0,
     }).add(
       new ThreeMeshUI.Text({
-        content: "Built  React Three Fiber and ",
+        content: "Built with ",
       }),
 
       new ThreeMeshUI.Text({
-        content: "ThreeMeshUI",
+        content: ".NET 8 Web API",
         fontColor: new THREE.Color(0x92e66c),
       }),
 
       new ThreeMeshUI.Text({
-        content: " for immersive 3D experience.",
+        content: " and React TypeScript frontend.",
       })
     );
 
     const subSubBlock2 = new ThreeMeshUI.Block({
       height: 0.53,
-      width: 0.5,
+      width: 0.7,
       margin: 0.01,
       padding: 0.02,
-      fontSize: 0.025,
+      fontSize: 0.04,
       alignItems: "start",
       textAlign: 'justify',
       backgroundOpacity: 0,
     }).add(
       new ThreeMeshUI.Text({
         content:
-          "This portfolio showcases my skills in modern web development, 3D graphics, and interactive design. Features include dynamic UI elements, 3D models, and responsive design principles. The project demonstrates proficiency in React, Three.js, and TypeScript.",
+          "A comprehensive financial analysis and portfolio management application built with .NET 8 Web API and React TypeScript frontend. This application provides real-time stock data, financial statement analysis, portfolio tracking, and company profiling capabilities.",
       })
     );
 
@@ -316,7 +291,7 @@ function PortfolioUI(props: PortfolioUIProps) {
     container.add(contentContainer);
 
     // Load project image texture
-    new THREE.TextureLoader().load(Project1Image, (texture) => {
+    new THREE.TextureLoader().load(FinanceAppImage, (texture) => {
       // @ts-ignore - ThreeMeshUI set method
       leftSubBlock.set({
         backgroundTexture: texture,
@@ -325,6 +300,137 @@ function PortfolioUI(props: PortfolioUIProps) {
 
     return container;
   }, []); // Remove formData dependency since it's not used in the container
+
+  // Create second project container for FitTrack
+  const fitTrackContainer = useMemo(() => {
+    const container = new ThreeMeshUI.Block({
+      ref: "fittrack-container",
+      width: 4,
+      height: 1.5,
+      padding: 0.025,
+      fontFamily: FontJSON,
+      fontTexture: FontImage,
+      fontColor: new THREE.Color(0xffffff),
+      backgroundOpacity: 0,
+    });
+
+    container.position.set(0, -5.5, 0.1); // FitTrack project moved down to make room for header
+    container.rotation.x = -0.55; // Add tilt for 3D feel like the viper example
+
+    // Project title block
+    const title = new ThreeMeshUI.Block({
+      height: 0.2,
+      width: 1.5,
+      margin: 0.025,
+      justifyContent: "center",
+      fontSize: 0.09,
+    });
+
+    title.add(
+      new ThreeMeshUI.Text({
+        content: "FitTrack",
+      })
+    );
+
+    container.add(title);
+
+    // Left sub-block for project image
+    const leftSubBlock = new ThreeMeshUI.Block({
+      height: 0.95,
+      width: 1.0,
+      margin: 0.025,
+      padding: 0.025,
+      textAlign: "left",
+      justifyContent: "end",
+    });
+
+    const caption = new ThreeMeshUI.Block({
+      height: 0.07,
+      width: 0.37,
+      textAlign: "center",
+      justifyContent: "center",
+    });
+
+    caption.add(
+      new ThreeMeshUI.Text({
+        content: "Fitness Tracking App",
+        fontSize: 0.04,
+      })
+    );
+
+    leftSubBlock.add(caption);
+
+    // Right sub-block for project description
+    const rightSubBlock = new ThreeMeshUI.Block({
+      width: 2.5,
+      height: 0.95,
+      margin: 0.025,
+    });
+
+    const subSubBlock1 = new ThreeMeshUI.Block({
+      height: 0.35,
+      width: 0.7,
+      margin: 0.025,
+      padding: 0.02,
+      fontSize: 0.04,
+      justifyContent: "center",
+      backgroundOpacity: 0,
+    }).add(
+      new ThreeMeshUI.Text({
+        content: "Built with ",
+      }),
+
+      new ThreeMeshUI.Text({
+        content: "React, TypeScript",
+        fontColor: new THREE.Color(0x92e66c),
+      }),
+
+      new ThreeMeshUI.Text({
+        content: " and Tailwind CSS.",
+      })
+    );
+
+    const subSubBlock2 = new ThreeMeshUI.Block({
+      height: 0.53,
+      width: 0.7,
+      margin: 0.01,
+      padding: 0.02,
+      fontSize: 0.04,
+      alignItems: "start",
+      textAlign: 'justify',
+      backgroundOpacity: 0,
+    }).add(
+      new ThreeMeshUI.Text({
+        content:
+          "FitTrack is a modern fitness tracking web application built with React, TypeScript, and Tailwind CSS. It's designed to help users manage their workout routines and track their fitness progress.",
+      })
+    );
+
+    rightSubBlock.add(subSubBlock1, subSubBlock2);
+
+    // Content container to hold left and right sub-blocks
+    const contentContainer = new ThreeMeshUI.Block({
+      width: 4,
+      height: 1,
+      contentDirection: "row",
+      padding: 0.02,
+      margin: 0.025,
+      backgroundOpacity: 0,
+    });
+
+    contentContainer.add(leftSubBlock, rightSubBlock);
+    container.add(contentContainer);
+
+    // Load project image texture
+    new THREE.TextureLoader().load(FitTrackImage, (texture) => {
+      // @ts-ignore - ThreeMeshUI set method
+      leftSubBlock.set({
+        backgroundTexture: texture,
+      });
+    });
+
+    return container;
+  }, []);
 
   const contactBlock = useMemo(() => {
     const block = new ThreeMeshUI.Block({
@@ -337,7 +443,7 @@ function PortfolioUI(props: PortfolioUIProps) {
       alignItems: "center",
     });
     // Set position after creation
-    block.position.set(0, -4.5, 0); // Contact block moved down one more unit
+    block.position.set(0, -7, 0); // Contact block moved down to make room for header
 
     // Email section
     const emailText = new ThreeMeshUI.Text({
@@ -379,43 +485,30 @@ function PortfolioUI(props: PortfolioUIProps) {
       tl.current = gsap.timeline();
     }
 
-    // Camera movement based on scroll - CORRECT direction
+    // Camera movement based on scroll
     if (tl.current) {
       tl.current.to(
         camera.position,
         {
-          duration: 2,
-          y: -3, // Move camera down as we scroll down (natural)
-          z: 6, // Move camera closer as we scroll down
+          duration: 7,
+          y: -3,
+          z: 6,
         },
         0
       );
     }
 
-    // UI group movement - CORRECT direction
+    // UI group movement
     if (uiGroupRef.current) {
       tl.current.to(
         uiGroupRef.current.position,
         {
-          duration: 2,
-          y: 6, // Move UI up as we scroll down (natural)
+          duration: 7,
+          y: 6,
         },
         0
       );
     }
-
-    // Tech stack models animation - REMOVED to keep models in fixed position
-    // if (tl.current) {
-    //   tl.current.to(
-    //     gridConfig,
-    //     {
-    //       duration: 1,
-    //       startPosition: [-1.5, -2, 3], // Move models down
-    //     },
-    //     0.5
-    //   );
-    // }
-
   }, []);
 
   // Apply scroll-based animations
@@ -427,35 +520,27 @@ function PortfolioUI(props: PortfolioUIProps) {
 
   // After the UI is created, add it to the r3f scene's group
   useEffect(() => {
-    console.log("useEffect running, adding blocks to scene");
+
     if (uiGroupRef.current) {
-      console.log("Adding blocks to scene");
+
       // Clear any existing blocks to prevent duplicates
       uiGroupRef.current.clear();
       
       // Add each portfolio section directly to the scene
       uiGroupRef.current.add(headerBlock);
       uiGroupRef.current.add(descriptionBlock);
-      uiGroupRef.current.add(avatarBlock);
       uiGroupRef.current.add(techStackTitle);
-      // uiGroupRef.current.add(heroBlock);
-      // uiGroupRef.current.add(aboutBlock);
       uiGroupRef.current.add(projectContainer);
-      // uiGroupRef.current.add(project1ImageBlock);
-      // uiGroupRef.current.add(project1DescBlock);
-      // uiGroupRef.current.add(project2ImageBlock);
-      // uiGroupRef.current.add(project2DescBlock);
+      uiGroupRef.current.add(fitTrackContainer);
       uiGroupRef.current.add(contactBlock);
       
-      // Add 3D models to the scene programmatically (not as JSX)
-      console.log("Attempting to add 3D models to scene...");
+      // Add 3D models to the scene
       const modelsGroup = new THREE.Group();
-      modelsGroup.position.set(0, -2, 0);
-      console.log("Created models group at position:", modelsGroup.position);
+      modelsGroup.position.set(0, -3, 0);
+
       
-      try {
+
         // Create and add GLB models to the group
-        console.log("Loading GLB models...");
         
         // Load GLB models using GLTFLoader
         const loader = new GLTFLoader();
@@ -466,7 +551,7 @@ function PortfolioUI(props: PortfolioUIProps) {
           glbScene.position.set(-1.5, 0, 0);
           glbScene.scale.set(0.7, 0.7, 0.7);
           modelsGroup.add(glbScene);
-          console.log("Added React model at position:", glbScene.position);
+
         });
         
         // Load JavaScript model
@@ -475,7 +560,7 @@ function PortfolioUI(props: PortfolioUIProps) {
           jsScene.position.set(-0.5, 0, 0);
           jsScene.scale.set(2, 2, 2);
           modelsGroup.add(jsScene);
-          console.log("Added JS model at position:", jsScene.position);
+
         });
         
         // Load TypeScript model
@@ -484,8 +569,8 @@ function PortfolioUI(props: PortfolioUIProps) {
           tsScene.position.set(0.5, 0, 0);
           tsScene.scale.set(2, 2, 2);
           modelsGroup.add(tsScene);
-          console.log("Added TS model at position:", tsScene.position);
-        });
+
+        }); 
         
         // Load C# model
         loader.load('/CS.glb', (gltf: any) => {
@@ -493,20 +578,24 @@ function PortfolioUI(props: PortfolioUIProps) {
           csScene.position.set(1.5, 0, 0);
           csScene.scale.set(2, 2, 2);
           modelsGroup.add(csScene);
-          console.log("Added CS model at position:", csScene.position);
+
+        });
+        
+        // Load Avatar 3D model
+        loader.load('/avatar.glb', (gltf: any) => {
+          const avatarScene = gltf.scene.clone();
+          avatarScene.position.set(2.1, 2.1, 0); // Position to match the avatar block
+          avatarScene.scale.set(0.7,0.7,0.7); // Much smaller scale to fit properly
+          modelsGroup.add(avatarScene);
+
         });
         
         uiGroupRef.current.add(modelsGroup);
-        console.log("Successfully added models group to uiGroupRef");
-        console.log("uiGroupRef children count:", uiGroupRef.current.children.length);
         
-      } catch (error) {
-        console.error("Error adding 3D models:", error);
-      }
+
       
-      console.log("Portfolio sections added to scene, uiGroupRef children:", uiGroupRef.current.children);
+
     } else {
-      console.log("uiGroupRef not available");
     }
     // Cleanup function: remove all children from the group
     return () => {
@@ -514,7 +603,7 @@ function PortfolioUI(props: PortfolioUIProps) {
         uiGroupRef.current.clear();
       }
     };
-  }, [headerBlock, descriptionBlock, avatarBlock, techStackTitle, projectContainer, contactBlock]);
+  }, [headerBlock, descriptionBlock, techStackTitle, projectContainer, fitTrackContainer, contactBlock]);
 
   // Update three-mesh-ui on every frame
   useFrame(() => {
@@ -627,10 +716,19 @@ function PortfolioUI(props: PortfolioUIProps) {
 
       {/* 3D Models are now added programmatically to uiGroupRef */}
 
-      {/* Enhanced lighting for GLB models */}
-      <ambientLight intensity={0.8} />
-      <directionalLight position={[5, 5, 5]} intensity={1} />
-      <pointLight position={[10, 10, 10]} intensity={0.5} />
+      {/* Enhanced lighting for GLB models and UI elements */}
+      <ambientLight intensity={1.2} />
+      <directionalLight position={[5, 5, 5]} intensity={1.5} />
+      <directionalLight position={[-5, 5, 5]} intensity={0.8} />
+      <pointLight position={[10, 10, 10]} intensity={0.8} />
+      <pointLight position={[2, 0, 5]} intensity={1} color="#ffffff" />
+      <spotLight 
+        position={[0, 5, 8]} 
+        intensity={1.5} 
+        angle={Math.PI / 3} 
+        penumbra={0.3} 
+        color="#ffffff"
+      />
 
       {/* OrbitControls handled in App.tsx */}
     </>

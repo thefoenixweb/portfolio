@@ -36,7 +36,7 @@ export const testFloatingText = (
   <Box args={[0.5, 0.5, 0.5]} position={[5, 0, 0]} material-color="red" />
 );
 
-// Debug functions moved from PortfolioUI.tsx
+// Debug functions and console logs moved from PortfolioUI.tsx
 export const useSceneDebugger = () => {
   const { scene } = useThree();
 
@@ -154,6 +154,17 @@ export const analyzeGLB = (scene: THREE.Group, modelName: string) => {
   console.log(`Unique geometries: ${geometries.size}`);
   console.log(`Unique materials: ${materials.size}`);
   console.log(`=== END ${modelName} ANALYSIS ===`);
+};
+
+// PortfolioUI Debug Functions
+export const portfolioUIDebugger = () => {
+  console.log("=== PORTFOLIO UI DEBUG INFO ===");
+  console.log("Portfolio sections: Header, Description, Tech Stack, Projects, Contact");
+  console.log("3D Models: React, JavaScript, TypeScript, C#, Avatar");
+  console.log("Animation Duration: 7 seconds");
+  console.log("Camera Movement: Y: -3, Z: 6");
+  console.log("UI Group Movement: Y: 6");
+  console.log("=== END PORTFOLIO UI DEBUG ===");
 };
 
 // Debug box component for testing
