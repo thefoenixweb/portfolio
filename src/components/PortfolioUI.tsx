@@ -5,6 +5,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Box, useGLTF, useScroll } from '@react-three/drei';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import ThreeMeshUI from 'three-mesh-ui';
 import gsap from 'gsap';
 
@@ -542,20 +543,24 @@ function PortfolioUI(props: PortfolioUIProps) {
 
         // Create and add GLB models to the group
         
-        // Load GLB models using GLTFLoader
-        const loader = new GLTFLoader();
+        // Setup Draco loader for compressed models
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('/draco/');
         
-        // Load React model (1661753280.glb)
-        loader.load('/1661753280.glb', (gltf: any) => {
+        // Load React model with Draco compression
+        const reactLoader = new GLTFLoader();
+        reactLoader.setDRACOLoader(dracoLoader);
+        reactLoader.load('/1661753280.glb', (gltf: any) => {
           const glbScene = gltf.scene.clone();
           glbScene.position.set(-1.5, 0, 0);
           glbScene.scale.set(0.7, 0.7, 0.7);
           modelsGroup.add(glbScene);
-
         });
         
         // Load JavaScript model
-        loader.load('/JS.glb', (gltf: any) => {
+        const jsLoader = new GLTFLoader();
+        jsLoader.setDRACOLoader(dracoLoader);
+        jsLoader.load('/JS.glb', (gltf: any) => {
           const jsScene = gltf.scene.clone();
           jsScene.position.set(-0.5, 0, 0);
           jsScene.scale.set(2, 2, 2);
@@ -564,7 +569,9 @@ function PortfolioUI(props: PortfolioUIProps) {
         });
         
         // Load TypeScript model
-        loader.load('/TS.glb', (gltf: any) => {
+        const tsLoader = new GLTFLoader();
+        tsLoader.setDRACOLoader(dracoLoader);
+        tsLoader.load('/TS.glb', (gltf: any) => {
           const tsScene = gltf.scene.clone();
           tsScene.position.set(0.5, 0, 0);
           tsScene.scale.set(2, 2, 2);
@@ -573,7 +580,9 @@ function PortfolioUI(props: PortfolioUIProps) {
         }); 
         
         // Load C# model
-        loader.load('/CS.glb', (gltf: any) => {
+        const csLoader = new GLTFLoader();
+        csLoader.setDRACOLoader(dracoLoader);
+        csLoader.load('/CS.glb', (gltf: any) => {
           const csScene = gltf.scene.clone();
           csScene.position.set(1.5, 0, 0);
           csScene.scale.set(2, 2, 2);
@@ -581,13 +590,16 @@ function PortfolioUI(props: PortfolioUIProps) {
 
         });
         
-        // Load Avatar 3D model
-        loader.load('/avatar.glb', (gltf: any) => {
+        // Load Avatar 3D model with Draco compression
+        
+        const avatarLoader = new GLTFLoader();
+        avatarLoader.setDRACOLoader(dracoLoader);
+        
+        avatarLoader.load('/avatar.glb', (gltf: any) => {
           const avatarScene = gltf.scene.clone();
-          avatarScene.position.set(2.1, 2.1, 0); // Position to match the avatar block
-          avatarScene.scale.set(0.7,0.7,0.7); // Much smaller scale to fit properly
+          avatarScene.position.set(2.1, 2.1, 0);
+          avatarScene.scale.set(0.7, 0.7, 0.7);
           modelsGroup.add(avatarScene);
-
         });
         
         uiGroupRef.current.add(modelsGroup);
