@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { OrbitControls, Box } from '@react-three/drei';
 import * as THREE from 'three';
@@ -127,8 +127,7 @@ export const analyzeGLB = (scene: THREE.Group, modelName: string) => {
   console.log('Scene UUID:', scene.uuid);
   
   let meshCount = 0;
-  let geometryCount = 0;
-  let materialCount = 0;
+
   const geometries = new Set();
   const materials = new Set();
   

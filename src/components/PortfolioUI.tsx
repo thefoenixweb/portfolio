@@ -1,8 +1,8 @@
 "use client"; 
 
-import React, { useRef, useMemo, useEffect, useState } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Box, useGLTF, useScroll } from '@react-three/drei';
+import { useScroll } from '@react-three/drei';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
@@ -11,69 +11,21 @@ import gsap from 'gsap';
 
 import FinanceAppImage from '../assets/FinanceApp.png';
 import FitTrackImage from '../assets/fittrack.png';
-import Project2Image from '../assets/project2.png';
+
 // HTML overlay removed - keeping only 3D scene content
 
-// Define types for your form data
-interface FormData {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-}
 
-// Define types for the props of PortfolioUI (if it were to accept any)
-interface PortfolioUIProps {
 
-}
-
-function PortfolioUI(props: PortfolioUIProps) {
+function PortfolioUI() {
   // Specify the type for useRef: THREE.Group is a common parent for objects in Three.js
   const uiGroupRef = useRef<THREE.Group>(null);
-  const { scene, camera } = useThree();
+  const { camera } = useThree();
   const scroll = useScroll();
   const tl = useRef<gsap.core.Timeline | null>(null);
 
-  // State for form data (for demonstration, actual input requires more)
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
-  });
 
-  // Helper to handle interactive states for buttons/links
-  // Explicitly type the parameters
-  const setupInteractiveBlock = (
-    block: any, // three-mesh-ui Block type (use 'any' to avoid type error, or extend types if available)
-    idleColor: THREE.Color,
-    hoverColor: THREE.Color,
-    activeColor: THREE.Color,
-    onClickAction: () => void // A function that returns nothing
-  ): void => {
-    block.states = [
-      {
-        state: "idle",
-        attributes: {
-          backgroundColor: idleColor,
-        },
-      },
-      {
-        state: "hovered",
-        attributes: {
-          backgroundColor: hoverColor,
-        },
-      },
-      {
-        state: "selected",
-        attributes: {
-          backgroundColor: activeColor,
-        },
-        onSet: onClickAction,
-      },
-    ];
-    block.setState("idle");
-  };
+
+
 
   
   const FontJSON = "/Roboto-msdf.json";
@@ -143,7 +95,6 @@ function PortfolioUI(props: PortfolioUIProps) {
   }, []);
 
   // Helper function to create circular blocks
-
 
 
 
@@ -473,12 +424,7 @@ function PortfolioUI(props: PortfolioUIProps) {
     return block;
   }, []); // Remove formData dependency since it's not used in the contact block
 
-  // Grid configuration - positioned under tech stack title
-  const gridConfig = {
-    spacing: 1, // Space between models
-    scale: [2,2,2], // Uniform scale for all models (reduced for better alignment)
-    startPosition: [-1.5,-0.4,3], // Positioned under the tech stack title
-  };
+
 
   // Scroll-based animations
   useEffect(() => {
@@ -604,6 +550,12 @@ function PortfolioUI(props: PortfolioUIProps) {
         
         uiGroupRef.current.add(modelsGroup);
         
+        // Add the 3D grid system
+        uiGroupRef.current.add(createGridSystem);
+        uiGroupRef.current.add(createSectionGrid);
+        uiGroupRef.current.add(createVerticalGridLines);
+        uiGroupRef.current.add(createCornerAccents);
+        
 
       
 
@@ -620,104 +572,186 @@ function PortfolioUI(props: PortfolioUIProps) {
   // Update three-mesh-ui on every frame
   useFrame(() => {
     ThreeMeshUI.update();
+    
+    // Animate grid system based on scroll position
+    if (createGridSystem && scroll) {
+      // Subtle grid opacity pulse based on scroll
+      createGridSystem.children.forEach((grid) => {
+        if (grid instanceof THREE.GridHelper && grid.material) {
+          const baseOpacity = 0.08;
+          const pulseEffect = Math.sin(scroll.offset * Math.PI * 2) * 0.02;
+          (grid.material as THREE.Material).opacity = Math.max(0.03, baseOpacity + pulseEffect);
+        }
+      });
+    }
+    
+    // Animate section dividers with subtle movement
+    if (createSectionGrid && scroll) {
+      createSectionGrid.children.forEach((line, index) => {
+        if (line instanceof THREE.Line && line.material) {
+          // Subtle opacity pulse based on scroll
+          const baseOpacity = 0.2;
+          const pulseEffect = Math.sin(scroll.offset * Math.PI * 3 + index) * 0.05;
+          (line.material as THREE.LineBasicMaterial).opacity = Math.max(0.1, baseOpacity + pulseEffect);
+        }
+      });
+    }
+    
+    // Animate vertical lines with scroll effect
+    if (createVerticalGridLines && scroll) {
+      createVerticalGridLines.children.forEach((line, index) => {
+        if (line instanceof THREE.Line && line.material) {
+          // Opacity wave effect
+          const baseOpacity = [0.2, 0.2, 0.15][index] || 0.15;
+          const waveEffect = Math.sin(scroll.offset * Math.PI * 3 + index * Math.PI / 2) * 0.05;
+          (line.material as THREE.LineBasicMaterial).opacity = Math.max(0.05, baseOpacity + waveEffect);
+        }
+      });
+    }
+    
+    // Animate corner accents with pulsing effect
+    if (createCornerAccents && scroll) {
+      createCornerAccents.children.forEach((line, index) => {
+        if (line instanceof THREE.Line && line.material) {
+          // Cyan pulsing effect
+          const baseOpacity = 0.6;
+          const pulseEffect = Math.sin(scroll.offset * Math.PI * 5 + index * 0.5) * 0.2;
+          (line.material as THREE.LineBasicMaterial).opacity = Math.max(0.2, baseOpacity + pulseEffect);
+          
+          // Subtle color shift
+          const time = Date.now() * 0.001;
+          const colorShift = Math.sin(time + index) * 0.3;
+          (line.material as THREE.LineBasicMaterial).color.setHSL(0.5 + colorShift * 0.1, 1, 0.5);
+        }
+      });
+    }
   });
 
-  // GLB Model Component
-  function GLBModel() {
-    const { scene } = useGLTF('/1661753280.glb');
+  // Create multiple stacked background grids for depth
+  const createGridSystem = useMemo(() => {
+    const gridGroup = new THREE.Group();
     
-    const memoizedScene = useMemo(() => {
-      return scene.clone();
-    }, [scene]);
+    // Create multiple grids with different sizes and positions for visible layering
+    const gridConfigs = [
+      { size: 25, divisions: 25, depth: -15, opacity: 0.25, color: 0xffffff }, // Largest, farthest back
+      { size: 20, divisions: 20, depth: -10, opacity: 0.21, color: 0xcccccc },
+      { size: 15, divisions: 15, depth: -5, opacity: 0.17, color: 0x999999 },
+      { size: 10, divisions: 10, depth: 0, opacity: 0.13, color: 0x666666 },
+      { size: 5, divisions: 5, depth: 5, opacity: 0.09, color: 0x333333 }   // Smallest, closest
+    ];
     
-    const position = [-1.5, 0, 0]; // Position relative to group
-    const glbScale = [0.7,0.7,0.7]; // Smaller scale for GLB model to match others
-    
-    return (
-      <primitive 
-        object={memoizedScene} 
-        position={position} 
-        scale={glbScale} 
-        rotation={[0, 0, 0]} 
-      />
-    );
-  }
-
-  // JavaScript GLB Model Component
-  function JSModel() {
-    const { scene } = useGLTF('/JS.glb');
-    
-    const memoizedScene = useMemo(() => {
-      return scene.clone();
-    }, [scene]);
-    
-    const position = [-0.5, 0, 0]; // Position relative to group
-    
-    return (
-      <primitive 
-        object={memoizedScene} 
-        position={position} 
-        scale={[2,2,2]} 
-        rotation={[0, 0, 0]} 
-      />
-    );
-  }
-
-  // TypeScript GLB Model Component
-  function TSModel() {
-    const { scene } = useGLTF('/TS.glb');
-    
-    const memoizedScene = useMemo(() => {
-      // Clone the scene to prevent multiple references
-      const clonedScene = scene.clone();
+    gridConfigs.forEach((config) => {
+      const backgroundGrid = new THREE.GridHelper(config.size, config.divisions, 0xffffff, 0xffffff);
+      backgroundGrid.material.opacity = config.opacity;
+      backgroundGrid.material.transparent = true;
+      backgroundGrid.position.set(0, 0, config.depth);
+      backgroundGrid.material.color.setHex(config.color);
       
-      // Filter out duplicate scenes - Keep only Scene_1
-      const filteredChildren = clonedScene.children.filter(child => {
-        return child.name === 'Scene_1' || 
-               child.name === 'Lighting' || 
-               child.name === 'Cameras';
-      });
-      
-      // Replace children with filtered version
-      clonedScene.children.length = 0;
-      filteredChildren.forEach(child => {
-        clonedScene.add(child);
-      });
-      
-      return clonedScene;
-    }, [scene]);
+      gridGroup.add(backgroundGrid);
+    });
     
-    const position = [0.5, 0, 0]; // Position relative to group
-    
-    return (
-      <primitive 
-        object={memoizedScene} 
-        position={position} 
-        scale={[2,2,2]} 
-        rotation={[0, 0, 0]} 
-      />
-    );
-  }
+    return gridGroup;
+  }, []);
 
-  // C# GLB Model Component
-  function CSModel() {
-    const { scene } = useGLTF('/CS.glb');
+  // Create simple section divider lines
+  const createSectionGrid = useMemo(() => {
+    const sectionGrids = new THREE.Group();
     
-    const memoizedScene = useMemo(() => {
-      return scene.clone();
-    }, [scene]);
+    // Simple horizontal section dividers
+    const sectionDividers = [
+      { y: 0.5, width: 8 },   // Between header and description
+      { y: -0.5, width: 8 },  // Between description and tech stack
+      { y: -2, width: 8 },    // Between tech stack and projects
+      { y: -4, width: 8 },    // Between projects and contact
+    ];
     
-    const position = [1.5, 0, 0]; // Position relative to group
+    sectionDividers.forEach(({ y, width }) => {
+      const divider = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(-width/2, y, 0.1),
+          new THREE.Vector3(width/2, y, 0.1)
+        ]),
+        new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.2, transparent: true })
+      );
+      sectionGrids.add(divider);
+    });
     
-    return (
-      <primitive 
-        object={memoizedScene} 
-        position={position} 
-        scale={[2,2,2]} 
-        rotation={[0, 0, 0]} 
-      />
+    return sectionGrids;
+  }, []);
+
+  // Create vertical grid lines for section separation
+  const createVerticalGridLines = useMemo(() => {
+    const verticalLines = new THREE.Group();
+    
+    // Left boundary line
+    const leftLine = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-4, 2, 0),
+        new THREE.Vector3(-4, -6, 0)
+      ]),
+      new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.2, transparent: true })
     );
-  }
+    verticalLines.add(leftLine);
+    
+    // Right boundary line
+    const rightLine = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(4, 2, 0),
+        new THREE.Vector3(4, -6, 0)
+      ]),
+      new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.2, transparent: true })
+    );
+    verticalLines.add(rightLine);
+    
+    // Center divider line
+    const centerLine = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, 2, 0),
+        new THREE.Vector3(0, -6, 0)
+      ]),
+      new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.15, transparent: true })
+    );
+    verticalLines.add(centerLine);
+    
+    return verticalLines;
+  }, []);
+
+  // Create corner accent lines for futuristic feel
+  const createCornerAccents = useMemo(() => {
+    const cornerGroup = new THREE.Group();
+    
+    // Corner accent lines (top-left, top-right, bottom-left, bottom-right)
+    const cornerPositions = [
+      [-3.5, 1.5, 0.2], [3.5, 1.5, 0.2], // Top corners
+      [-3.5, -5.5, 0.2], [3.5, -5.5, 0.2]  // Bottom corners
+    ];
+    
+    cornerPositions.forEach(([x, y, z]) => {
+      // Horizontal line
+      const horizontalLine = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(x - 0.3, y, z),
+          new THREE.Vector3(x + 0.3, y, z)
+        ]),
+        new THREE.LineBasicMaterial({ color: 0x00ffff, opacity: 0.6, transparent: true })
+      );
+      
+      // Vertical line
+      const verticalLine = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(x, y - 0.3, z),
+          new THREE.Vector3(x, y + 0.3, z)
+        ]),
+        new THREE.LineBasicMaterial({ color: 0x00ffff, opacity: 0.6, transparent: true })
+      );
+      
+      cornerGroup.add(horizontalLine, verticalLine);
+    });
+    
+    return cornerGroup;
+  }, []);
+
+
 
   return (
     <>
