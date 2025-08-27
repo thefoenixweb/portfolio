@@ -19,9 +19,192 @@ import FitTrackImage from '../assets/fittrack.png';
 function PortfolioUI() {
   // Specify the type for useRef: THREE.Group is a common parent for objects in Three.js
   const uiGroupRef = useRef<THREE.Group>(null);
-  const { camera } = useThree();
+  const { camera, scene } = useThree();
   const scroll = useScroll();
   const tl = useRef<gsap.core.Timeline | null>(null);
+
+  // Add raycaster for click detection
+  const raycaster = useMemo(() => new THREE.Raycaster(), []);
+  const mouse = useMemo(() => new THREE.Vector2(), []);
+  const clickableObjects = useRef<THREE.Object3D[]>([]);
+  
+        // Clear clickable objects to prevent duplicates
+      const clearClickableObjects = () => {
+        clickableObjects.current = [];
+      };
+
+  // Handle mouse click events
+  const handleClick = (event: MouseEvent) => {
+    // Calculate mouse position in normalized device coordinates
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    // Update the picking ray with the camera and mouse position
+    raycaster.setFromCamera(mouse, camera);
+
+    // Calculate objects intersecting the picking ray
+    const intersects = raycaster.intersectObjects(clickableObjects.current, true);
+
+      if (intersects.length > 0) {
+        const clickedObject = intersects[0].object;
+        console.log('Click detected on object:', clickedObject.userData?.type);
+        
+        // Check if the clicked object is the Finance App title
+        if (clickedObject.userData && clickedObject.userData.type === 'finance-app-title') {
+          console.log('Finance App title clicked!');
+          console.log('Opening Finance App URL!');
+          
+          // Create a visible, clickable link that the user can interact with
+                const financeLink = document.createElement('a');
+          financeLink.href = 'https://financeapp555.netlify.app/';
+          financeLink.target = '_blank';
+          financeLink.rel = 'noopener noreferrer';
+          financeLink.textContent = '🚀 Click to Open Finance App 🚀';
+          financeLink.style.position = 'fixed';
+          financeLink.style.top = '50%';
+          financeLink.style.left = '50%';
+          financeLink.style.transform = 'translate(-50%, -50%)';
+          financeLink.style.zIndex = '1000';
+          financeLink.style.padding = '20px 40px';
+          financeLink.style.backgroundColor = '#00ff00';
+          financeLink.style.color = 'black';
+          financeLink.style.border = '2px solid #000';
+          financeLink.style.borderRadius = '15px';
+          financeLink.style.cursor = 'pointer';
+          financeLink.style.fontSize = '18px';
+          financeLink.style.fontWeight = 'bold';
+          financeLink.style.textDecoration = 'none';
+          financeLink.style.textAlign = 'center';
+          financeLink.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+          financeLink.style.transition = 'all 0.3s ease';
+          
+          // Hover effects
+          financeLink.onmouseenter = () => {
+            financeLink.style.backgroundColor = '#ffff00';
+            financeLink.style.transform = 'translate(-50%, -50%) scale(1.1)';
+          };
+          
+          financeLink.onmouseleave = () => {
+            financeLink.style.backgroundColor = '#00ff00';
+            financeLink.style.transform = 'translate(-50%, -50%) scale(1)';
+          };
+          
+          // Click to open URL
+          financeLink.onclick = (e) => {
+            e.preventDefault();
+                      window.open('https://financeapp555.netlify.app/', '_blank');
+          document.body.removeChild(financeLink);
+        };
+        
+        document.body.appendChild(financeLink);
+        // Visible Finance App link created
+      
+      // Auto-remove link after 10 seconds
+      setTimeout(() => {
+        if (document.body.contains(financeLink)) {
+          document.body.removeChild(financeLink);
+        }
+      }, 10000);
+          
+          // Visual feedback: Flash the title text to show it was clicked
+          if (clickedObject.userData && clickedObject.userData.type === 'finance-app-title') {
+            // Flash the title text to bright yellow
+            projectContainer.traverse((child) => {
+              if (child.userData && child.userData.type === 'finance-app-title') {
+                child.traverse((grandChild) => {
+                  if (grandChild instanceof ThreeMeshUI.Text) {
+                    // @ts-ignore - ThreeMeshUI set method
+                    grandChild.set({ fontColor: new THREE.Color(0xffffff) }); // Bright white flash
+                  }
+                });
+              }
+            });
+            
+            setTimeout(() => {
+              // Reset to default green color
+              projectContainer.traverse((child) => {
+                if (child.userData && child.userData.type === 'finance-app-title') {
+                  child.traverse((grandChild) => {
+                    if (grandChild instanceof ThreeMeshUI.Text) {
+                      // @ts-ignore - ThreeMeshUI set method
+                      grandChild.set({ fontColor: new THREE.Color(0x92e66c) }); // Green default
+                    }
+                  });
+                }
+              });
+            }, 200);
+          }
+        }
+        
+        // Only Finance App title is clickable - no test objects needed
+      }
+  };
+
+  // Add click event listener
+  useEffect(() => {
+    window.addEventListener('click', handleClick);
+    return () => {
+      window.removeEventListener('click', handleClick);
+    };
+  }, [camera]);
+
+  // No test objects needed - only the Finance App title is clickable
+
+  // Add hover effect for clickable objects
+  const handleMouseMove = (event: MouseEvent) => {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(clickableObjects.current, true);
+    
+    // Hover effect for clickable objects
+
+          // Hover effect: Change cursor and provide visual feedback
+      if (intersects.length > 0) {
+        document.body.style.cursor = 'pointer';
+        console.log('Hover detected over clickable object:', intersects[0].object.userData?.type);
+        
+        // Highlight the hovered object by changing the title text color
+        const hoveredObject = intersects[0].object;
+        if (hoveredObject.userData && hoveredObject.userData.type === 'finance-app-title') {
+          console.log('Hovering over Finance App title - changing color to yellow');
+          // Find the title text and change its color
+          projectContainer.traverse((child) => {
+            if (child.userData && child.userData.type === 'finance-app-title') {
+              child.traverse((grandChild) => {
+                if (grandChild instanceof ThreeMeshUI.Text) {
+                  console.log('Found title text, changing color to yellow');
+                  // @ts-ignore - ThreeMeshUI set method
+                  grandChild.set({ fontColor: new THREE.Color(0xffff00) }); // Yellow on hover
+                }
+              });
+            }
+          });
+        }
+      } else {
+        document.body.style.cursor = 'default';
+        
+        // Reset title text color to default
+        projectContainer.traverse((child) => {
+          if (child.userData && child.userData.type === 'finance-app-title') {
+            child.traverse((grandChild) => {
+              if (grandChild instanceof ThreeMeshUI.Text) {
+                // @ts-ignore - ThreeMeshUI set method
+                grandChild.set({ fontColor: new THREE.Color(0x92e66c) }); // Green default
+              }
+            });
+          }
+        });
+      }
+  };
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [camera]);
 
 
 
@@ -150,8 +333,17 @@ function PortfolioUI() {
     title.add(
       new ThreeMeshUI.Text({
         content: "Finance App",
+        fontColor: new THREE.Color(0x92e66c), // Green color to indicate it's clickable
       })
     );
+    
+    // Title is now clickable with visual feedback
+
+    // Make the title clickable
+    title.userData = { type: 'finance-app-title' };
+    title.userData.url = 'https://financeapp555.netlify.app/';
+    
+    // Title is now clickable with visual feedback
 
     container.add(title);
 
@@ -473,6 +665,9 @@ function PortfolioUI() {
       // Clear any existing blocks to prevent duplicates
       uiGroupRef.current.clear();
       
+      // Clear clickable objects to prevent duplicates
+      clearClickableObjects();
+      
       // Add each portfolio section directly to the scene
       uiGroupRef.current.add(headerBlock);
       uiGroupRef.current.add(descriptionBlock);
@@ -480,6 +675,40 @@ function PortfolioUI() {
       uiGroupRef.current.add(projectContainer);
       uiGroupRef.current.add(fitTrackContainer);
       uiGroupRef.current.add(contactBlock);
+      
+      // Portfolio sections added to scene
+      
+      // Create a truly invisible clickable mesh that covers the Finance App title area
+      const titleClickMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.5, 0.2), // Same size as the title
+        new THREE.MeshBasicMaterial({ 
+          transparent: true, 
+          opacity: 0, // Completely invisible
+          side: THREE.DoubleSide,
+          depthWrite: false, // Don't write to depth buffer
+          depthTest: false   // Don't test against depth buffer
+        })
+      );
+      
+      // Position the mesh exactly where the Finance App title is
+      titleClickMesh.position.set(0, -3.5, 0.1); // Very close to the title
+      titleClickMesh.userData = { type: 'finance-app-title' };
+      titleClickMesh.userData.url = 'https://financeapp555.netlify.app/';
+      
+      // Make the mesh truly invisible by setting visible to false
+      titleClickMesh.visible = false;
+      
+      // Add to clickable objects array
+      clickableObjects.current.push(titleClickMesh);
+      
+      // Add to the scene
+      uiGroupRef.current.add(titleClickMesh);
+      
+      console.log('Truly invisible clickable mesh added for Finance App title');
+      
+      // No test button needed - URL opening is working
+      
+      // Title click mesh is now in the scene
       
       // Add 3D models to the scene
       const modelsGroup = new THREE.Group();
@@ -555,6 +784,8 @@ function PortfolioUI() {
         uiGroupRef.current.add(createSectionGrid);
         uiGroupRef.current.add(createVerticalGridLines);
         uiGroupRef.current.add(createCornerAccents);
+        
+        // No test objects needed
         
 
       

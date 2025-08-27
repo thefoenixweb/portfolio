@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { OrbitControls, Box } from '@react-three/drei';
 import * as THREE from 'three';
@@ -217,6 +217,87 @@ export const ClearSceneBox = () => {
       }}
     />
   );
+};
+
+// Test objects for debugging raycaster and URL opening
+export const TestObjects = () => {
+  const { scene } = useThree();
+
+  // Test cube for raycaster testing
+  const testCube = useMemo(() => {
+    const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    const material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.7 });
+    const cube = new THREE.Mesh(geometry, material);
+    cube.position.set(3, 0, 0);
+    cube.userData = { type: 'test-cube' };
+    return cube;
+  }, []);
+
+  // Test sphere for raycaster testing
+  const testSphere = useMemo(() => {
+    const sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(0.3, 8, 8),
+      new THREE.MeshBasicMaterial({ color: 0x0000ff, transparent: true, opacity: 0.7 })
+    );
+    sphere.position.set(2, -4, 0.5);
+    sphere.userData = { type: 'test-sphere' };
+    return sphere;
+  }, []);
+
+  // Test button for URL opening verification
+  const testButton = useMemo(() => {
+    const button = document.createElement('button');
+    button.textContent = 'Test URL Opening';
+    button.style.position = 'fixed';
+    button.style.top = '10px';
+    button.style.right = '10px';
+    button.style.zIndex = '1000';
+    button.style.padding = '10px';
+    button.style.backgroundColor = '#ff0000';
+    button.style.color = 'white';
+    button.style.border = 'none';
+    button.style.borderRadius = '5px';
+    button.style.cursor = 'pointer';
+    
+    button.onclick = () => {
+      console.log('Test button clicked - trying to open URL');
+      try {
+        const newWindow = window.open('https://financeapp555.netlify.app/', '_blank');
+        if (newWindow) {
+          console.log('Test button: URL opened successfully');
+        } else {
+          console.log('Test button: Popup blocked');
+        }
+      } catch (error) {
+        console.error('Test button error:', error);
+      }
+    };
+    
+    return button;
+  }, []);
+
+  useEffect(() => {
+    // Add test objects to scene
+    if (scene) {
+      scene.add(testCube);
+      scene.add(testSphere);
+      document.body.appendChild(testButton);
+      console.log('Test objects added to scene');
+    }
+
+    return () => {
+      // Cleanup
+      if (scene) {
+        scene.remove(testCube);
+        scene.remove(testSphere);
+      }
+      if (document.body.contains(testButton)) {
+        document.body.removeChild(testButton);
+      }
+    };
+  }, [scene, testCube, testSphere, testButton]);
+
+  return null; // This component doesn't render anything visible
 };
 
 function TestBlocks() {
