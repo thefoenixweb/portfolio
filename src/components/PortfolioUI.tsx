@@ -19,7 +19,7 @@ import FitTrackImage from '../assets/fittrack.png';
 function PortfolioUI() {
   // Specify the type for useRef: THREE.Group is a common parent for objects in Three.js
   const uiGroupRef = useRef<THREE.Group>(null);
-  const { camera, scene } = useThree();
+  const { camera, scene: _scene } = useThree();
   const scroll = useScroll();
   const tl = useRef<gsap.core.Timeline | null>(null);
 
