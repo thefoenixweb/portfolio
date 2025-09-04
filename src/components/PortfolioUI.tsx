@@ -126,7 +126,7 @@ function PortfolioUI() {
         createAndShowLink('https://financeapp555.netlify.app/', 'Finance App');
         flashTitle(projectContainer, 'finance-app-title');
       } else if (clickedObject.userData && clickedObject.userData.type === 'fittrack-title') {
-        createAndShowLink('https://fittrack-portfolio.netlify.app/', 'FitTrack');
+        createAndShowLink('https://fittrack555.netlify.app/', 'FitTrack');
         flashTitle(fitTrackContainer, 'fittrack-title');
       }
     }
