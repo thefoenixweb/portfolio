@@ -12,135 +12,126 @@ import gsap from 'gsap';
 import FinanceAppImage from '../assets/FinanceApp.png';
 import FitTrackImage from '../assets/fittrack.png';
 
-// HTML overlay removed - keeping only 3D scene content
-
-
-
 function PortfolioUI() {
-  // Specify the type for useRef: THREE.Group is a common parent for objects in Three.js
   const uiGroupRef = useRef<THREE.Group>(null);
   const { camera, scene: _scene } = useThree();
   const scroll = useScroll();
   const tl = useRef<gsap.core.Timeline | null>(null);
 
-  // Add raycaster for click detection
   const raycaster = useMemo(() => new THREE.Raycaster(), []);
   const mouse = useMemo(() => new THREE.Vector2(), []);
   const clickableObjects = useRef<THREE.Object3D[]>([]);
   
-        // Clear clickable objects to prevent duplicates
-      const clearClickableObjects = () => {
-        clickableObjects.current = [];
-      };
-
-  // Handle mouse click events
-  const handleClick = (event: MouseEvent) => {
-    // Calculate mouse position in normalized device coordinates
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    // Update the picking ray with the camera and mouse position
-    raycaster.setFromCamera(mouse, camera);
-
-    // Calculate objects intersecting the picking ray
-    const intersects = raycaster.intersectObjects(clickableObjects.current, true);
-
-      if (intersects.length > 0) {
-        const clickedObject = intersects[0].object;
-        console.log('Click detected on object:', clickedObject.userData?.type);
-        
-        // Check if the clicked object is the Finance App title
-        if (clickedObject.userData && clickedObject.userData.type === 'finance-app-title') {
-          console.log('Finance App title clicked!');
-          console.log('Opening Finance App URL!');
-          
-          // Create a visible, clickable link that the user can interact with
-                const financeLink = document.createElement('a');
-          financeLink.href = 'https://financeapp555.netlify.app/';
-          financeLink.target = '_blank';
-          financeLink.rel = 'noopener noreferrer';
-          financeLink.textContent = '🚀 Click to Open Finance App 🚀';
-          financeLink.style.position = 'fixed';
-          financeLink.style.top = '50%';
-          financeLink.style.left = '50%';
-          financeLink.style.transform = 'translate(-50%, -50%)';
-          financeLink.style.zIndex = '1000';
-          financeLink.style.padding = '20px 40px';
-          financeLink.style.backgroundColor = '#00ff00';
-          financeLink.style.color = 'black';
-          financeLink.style.border = '2px solid #000';
-          financeLink.style.borderRadius = '15px';
-          financeLink.style.cursor = 'pointer';
-          financeLink.style.fontSize = '18px';
-          financeLink.style.fontWeight = 'bold';
-          financeLink.style.textDecoration = 'none';
-          financeLink.style.textAlign = 'center';
-          financeLink.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
-          financeLink.style.transition = 'all 0.3s ease';
-          
-          // Hover effects
-          financeLink.onmouseenter = () => {
-            financeLink.style.backgroundColor = '#ffff00';
-            financeLink.style.transform = 'translate(-50%, -50%) scale(1.1)';
-          };
-          
-          financeLink.onmouseleave = () => {
-            financeLink.style.backgroundColor = '#00ff00';
-            financeLink.style.transform = 'translate(-50%, -50%) scale(1)';
-          };
-          
-          // Click to open URL
-          financeLink.onclick = (e) => {
-            e.preventDefault();
-                      window.open('https://financeapp555.netlify.app/', '_blank');
-          document.body.removeChild(financeLink);
-        };
-        
-        document.body.appendChild(financeLink);
-        // Visible Finance App link created
-      
-      // Auto-remove link after 10 seconds
-      setTimeout(() => {
-        if (document.body.contains(financeLink)) {
-          document.body.removeChild(financeLink);
-        }
-      }, 10000);
-          
-          // Visual feedback: Flash the title text to show it was clicked
-          if (clickedObject.userData && clickedObject.userData.type === 'finance-app-title') {
-            // Flash the title text to bright yellow
-            projectContainer.traverse((child) => {
-              if (child.userData && child.userData.type === 'finance-app-title') {
-                child.traverse((grandChild) => {
-                  if (grandChild instanceof ThreeMeshUI.Text) {
-                    // @ts-ignore - ThreeMeshUI set method
-                    grandChild.set({ fontColor: new THREE.Color(0xffffff) }); // Bright white flash
-                  }
-                });
-              }
-            });
-            
-            setTimeout(() => {
-              // Reset to default green color
-              projectContainer.traverse((child) => {
-                if (child.userData && child.userData.type === 'finance-app-title') {
-                  child.traverse((grandChild) => {
-                    if (grandChild instanceof ThreeMeshUI.Text) {
-                      // @ts-ignore - ThreeMeshUI set method
-                      grandChild.set({ fontColor: new THREE.Color(0x92e66c) }); // Green default
-                    }
-                  });
-                }
-              });
-            }, 200);
-          }
-        }
-        
-        // Only Finance App title is clickable - no test objects needed
-      }
+  const clearClickableObjects = () => {
+    clickableObjects.current = [];
   };
 
-  // Add click event listener
+  const handleClick = (event: MouseEvent) => {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(clickableObjects.current, true);
+
+    if (intersects.length > 0) {
+      const clickedObject = intersects[0].object;
+      console.log('Click detected on object:', clickedObject.userData?.type);
+
+      // 🚩 UPDATED createAndShowLink FUNCTION
+      const createAndShowLink = (url: string, content: string) => {
+        const linkElement = document.createElement('a');
+        linkElement.href = url;
+        linkElement.target = '_blank';
+        linkElement.rel = 'noopener noreferrer';
+        linkElement.textContent = `🚀 Click to Open ${content} 🚀`;
+        linkElement.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 1000;
+          padding: 20px 40px;
+          background-color: #00ff00;
+          color: black;
+          border: 2px solid #000;
+          border-radius: 15px;
+          cursor: pointer;
+          font-size: 18px;
+          font-weight: bold;
+          text-decoration: none;
+          text-align: center;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+          transition: all 0.3s ease;
+        `;
+        document.body.appendChild(linkElement);
+        
+        // Add a global click handler to remove the element
+        const handleGlobalClick = (e: MouseEvent) => {
+          // If the click is not on the link element itself, remove it
+          if (e.target !== linkElement) {
+            if (document.body.contains(linkElement)) {
+              document.body.removeChild(linkElement);
+            }
+            // Clean up the event listener
+            document.removeEventListener('click', handleGlobalClick);
+          }
+        };
+        
+        // Add the event listener to the document
+        document.addEventListener('click', handleGlobalClick);
+
+        linkElement.onmouseenter = () => {
+          linkElement.style.backgroundColor = '#ffff00';
+          linkElement.style.transform = 'translate(-50%, -50%) scale(1.1)';
+        };
+        linkElement.onmouseleave = () => {
+          linkElement.style.backgroundColor = '#00ff00';
+          linkElement.style.transform = 'translate(-50%, -50%) scale(1)';
+        };
+
+        // Fallback timeout
+        setTimeout(() => {
+          if (document.body.contains(linkElement)) {
+            document.body.removeChild(linkElement);
+          }
+          document.removeEventListener('click', handleGlobalClick);
+        }, 10000);
+      };
+
+      const flashTitle = (container: ThreeMeshUI.Block, type: string) => {
+        container.traverse((child) => {
+          if (child.userData && child.userData.type === type) {
+            child.traverse((grandChild) => {
+              if (grandChild instanceof ThreeMeshUI.Text) {
+                // @ts-ignore
+                grandChild.set({ fontColor: new THREE.Color(0xffffff) });
+              }
+            });
+          }
+        });
+        setTimeout(() => {
+          container.traverse((child) => {
+            if (child.userData && child.userData.type === type) {
+              child.traverse((grandChild) => {
+                if (grandChild instanceof ThreeMeshUI.Text) {
+                  // @ts-ignore
+                  grandChild.set({ fontColor: new THREE.Color(0x92e66c) });
+                }
+              });
+            }
+          });
+        }, 200);
+      };
+
+      if (clickedObject.userData && clickedObject.userData.type === 'finance-app-title') {
+        createAndShowLink('https://financeapp555.netlify.app/', 'Finance App');
+        flashTitle(projectContainer, 'finance-app-title');
+      } else if (clickedObject.userData && clickedObject.userData.type === 'fittrack-title') {
+        createAndShowLink('https://fittrack-portfolio.netlify.app/', 'FitTrack');
+        flashTitle(fitTrackContainer, 'fittrack-title');
+      }
+    }
+  };
+
   useEffect(() => {
     window.addEventListener('click', handleClick);
     return () => {
@@ -148,55 +139,54 @@ function PortfolioUI() {
     };
   }, [camera]);
 
-  // No test objects needed - only the Finance App title is clickable
-
-  // Add hover effect for clickable objects
   const handleMouseMove = (event: MouseEvent) => {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(clickableObjects.current, true);
-    
-    // Hover effect for clickable objects
 
-          // Hover effect: Change cursor and provide visual feedback
-      if (intersects.length > 0) {
-        document.body.style.cursor = 'pointer';
-        console.log('Hover detected over clickable object:', intersects[0].object.userData?.type);
-        
-        // Highlight the hovered object by changing the title text color
-        const hoveredObject = intersects[0].object;
-        if (hoveredObject.userData && hoveredObject.userData.type === 'finance-app-title') {
-          console.log('Hovering over Finance App title - changing color to yellow');
-          // Find the title text and change its color
-          projectContainer.traverse((child) => {
-            if (child.userData && child.userData.type === 'finance-app-title') {
-              child.traverse((grandChild) => {
-                if (grandChild instanceof ThreeMeshUI.Text) {
-                  console.log('Found title text, changing color to yellow');
-                  // @ts-ignore - ThreeMeshUI set method
-                  grandChild.set({ fontColor: new THREE.Color(0xffff00) }); // Yellow on hover
-                }
-              });
-            }
-          });
-        }
-      } else {
-        document.body.style.cursor = 'default';
-        
-        // Reset title text color to default
-        projectContainer.traverse((child) => {
-          if (child.userData && child.userData.type === 'finance-app-title') {
+    const hasHovered = intersects.length > 0;
+    document.body.style.cursor = hasHovered ? 'pointer' : 'default';
+
+    const hoveredObject = hasHovered ? intersects[0].object : null;
+
+    projectContainer.traverse((child) => {
+      if (child.userData && child.userData.type === 'finance-app-title') {
+        child.traverse((grandChild) => {
+          if (grandChild instanceof ThreeMeshUI.Text) {
+            // @ts-ignore
+            grandChild.set({ fontColor: new THREE.Color(0x92e66c) });
+          }
+        });
+      }
+    });
+    fitTrackContainer.traverse((child) => {
+      if (child.userData && child.userData.type === 'fittrack-title') {
+        child.traverse((grandChild) => {
+          if (grandChild instanceof ThreeMeshUI.Text) {
+            // @ts-ignore
+            grandChild.set({ fontColor: new THREE.Color(0xffffff) });
+          }
+        });
+      }
+    });
+
+    if (hoveredObject) {
+      const type = hoveredObject.userData?.type;
+      if (type === 'finance-app-title' || type === 'fittrack-title') {
+        const container = type === 'finance-app-title' ? projectContainer : fitTrackContainer;
+        container.traverse((child) => {
+          if (child.userData && child.userData.type === type) {
             child.traverse((grandChild) => {
               if (grandChild instanceof ThreeMeshUI.Text) {
-                // @ts-ignore - ThreeMeshUI set method
-                grandChild.set({ fontColor: new THREE.Color(0x92e66c) }); // Green default
+                // @ts-ignore
+                grandChild.set({ fontColor: new THREE.Color(0xffff00) });
               }
             });
           }
         });
       }
+    }
   };
 
   useEffect(() => {
@@ -206,29 +196,20 @@ function PortfolioUI() {
     };
   }, [camera]);
 
-
-
-
-
-  
   const FontJSON = "/Roboto-msdf.json";
   const FontImage = "/Roboto-msdf.png";
-  
-    // Create actual portfolio sections
+
   const headerBlock = useMemo(() => {
     const block = new ThreeMeshUI.Block({
       width: 6,
       height: 0.6,
       padding: 0.05,
-      backgroundOpacity: 0.3, // Transparent like project blocks
+      backgroundOpacity: 0.3,
       contentDirection: "row",
       justifyContent: "start",
       alignItems: "center",
     });
-    // Set position after creation
-    block.position.set(0, 1, 0); // Header moved down one more unit
-
-    // Add name
+    block.position.set(0, 1, 0);
     const nameText = new ThreeMeshUI.Text({
       content: "Tshepiso Molefi",
       fontSize: 0.2,
@@ -237,31 +218,17 @@ function PortfolioUI() {
       fontColor: new THREE.Color(0xffffff),
     });
     block.add(nameText);
-
-    // Add navigation items (simplified to avoid text rendering issues)
-   /*  const navText = new ThreeMeshUI.Text({
-      content: "About | Projects | Skills | Contact",
-      fontSize: 0.08,
-      fontFamily: FontJSON,
-      fontTexture: FontImage,
-      fontColor: new THREE.Color(0xecf0f1),
-      margin: [0, 0.05, 0, 0],
-    });
-    block.add(navText); */
-
     return block;
-  }, []); // Remove formData dependency since it's not used in the header
+  }, []);
 
-  // Description block
   const descriptionBlock = useMemo(() => {
     const block = new ThreeMeshUI.Block({
       width: 4,
       height: 1,
-      backgroundOpacity: 0, // Transparent like project blocks
+      backgroundOpacity: 0,
       padding: 0.1,
       margin: [0, 0.1, 0, 0],
     });
-
     const descriptionText = new ThreeMeshUI.Text({
       content: "I am a web developer who enjoys creating fintech apps and 3d web apps. I know, C#, javascript and typescript. The libraries I use to build these apps are react, asp core and threejs.",
       fontSize: 0.1,
@@ -270,27 +237,18 @@ function PortfolioUI() {
       fontColor: new THREE.Color(0xecf0f1),
     });
     block.add(descriptionText);
-
-    // Set position after creation
-    block.position.set(-1, -1, 0); // Description block moved down to make room for header
-
+    block.position.set(-1, -1, 0);
     return block;
   }, []);
 
-  // Helper function to create circular blocks
-
-
-
-  // Tech stack title text (floating)
   const techStackTitle = useMemo(() => {
     const block = new ThreeMeshUI.Block({
       width: 3,
-      height: 0.0001, // Very thin background
+      height: 0.0001,
       backgroundColor: new THREE.Color(0x000000),
       padding: 0,
       margin: [0, 0, 0, 0],
     });
-
     const text = new ThreeMeshUI.Text({
       content: "MY TECH STACK",
       fontSize: 0.12,
@@ -298,14 +256,11 @@ function PortfolioUI() {
       fontTexture: FontImage,
       fontColor: new THREE.Color(0xecf0f1),
     });
-
     block.add(text);
-    block.position.set(0, -2.5, 0); // Tech stack title moved down to make room for header
-
+    block.position.set(0, -2.5, 0);
     return block;
   }, []);
 
-  // Create nested project container (similar to the example code structure)
   const projectContainer = useMemo(() => {
     const container = new ThreeMeshUI.Block({
       ref: "project-container",
@@ -317,11 +272,9 @@ function PortfolioUI() {
       fontColor: new THREE.Color(0xffffff),
       backgroundOpacity: 0,
     });
+    container.position.set(0, -4, 0.1);
+    container.rotation.x = -0.55;
 
-    container.position.set(0, -4, 0.1); // Finance App project moved down to make room for header
-    container.rotation.x = -0.55; // Add tilt for 3D feel like the viper example
-
-    // Project title block
     const title = new ThreeMeshUI.Block({
       height: 0.2,
       width: 1.5,
@@ -329,25 +282,23 @@ function PortfolioUI() {
       justifyContent: "center",
       fontSize: 0.09,
     });
-
     title.add(
       new ThreeMeshUI.Text({
         content: "Finance App",
-        fontColor: new THREE.Color(0x92e66c), // Green color to indicate it's clickable
+        fontColor: new THREE.Color(0x92e66c),
       })
     );
-    
-    // Title is now clickable with visual feedback
-
-    // Make the title clickable
     title.userData = { type: 'finance-app-title' };
-    title.userData.url = 'https://financeapp555.netlify.app/';
-    
-    // Title is now clickable with visual feedback
-
     container.add(title);
-
-    // Left sub-block for project image
+    
+    const contentContainer = new ThreeMeshUI.Block({
+      width: 4,
+      height: 1,
+      contentDirection: "row",
+      padding: 0.02,
+      margin: 0.025,
+      backgroundOpacity: 0,
+    });
     const leftSubBlock = new ThreeMeshUI.Block({
       height: 0.95,
       width: 1.0,
@@ -356,30 +307,24 @@ function PortfolioUI() {
       textAlign: "left",
       justifyContent: "end",
     });
-
     const caption = new ThreeMeshUI.Block({
       height: 0.07,
       width: 0.37,
       textAlign: "center",
       justifyContent: "center",
     });
-
     caption.add(
       new ThreeMeshUI.Text({
         content: "Financial Management App",
         fontSize: 0.04,
       })
     );
-
     leftSubBlock.add(caption);
-
-    // Right sub-block for project description
     const rightSubBlock = new ThreeMeshUI.Block({
       width: 2.5,
       height: 0.95,
       margin: 0.025,
     });
-
     const subSubBlock1 = new ThreeMeshUI.Block({
       height: 0.35,
       width: 0.5,
@@ -389,20 +334,10 @@ function PortfolioUI() {
       justifyContent: "center",
       backgroundOpacity: 0,
     }).add(
-      new ThreeMeshUI.Text({
-        content: "Built with ",
-      }),
-
-      new ThreeMeshUI.Text({
-        content: ".NET 8 Web API",
-        fontColor: new THREE.Color(0x92e66c),
-      }),
-
-      new ThreeMeshUI.Text({
-        content: " and React TypeScript frontend.",
-      })
+      new ThreeMeshUI.Text({ content: "Built with " }),
+      new ThreeMeshUI.Text({ content: ".NET 8 Web API", fontColor: new THREE.Color(0x92e66c) }),
+      new ThreeMeshUI.Text({ content: " and React TypeScript frontend." })
     );
-
     const subSubBlock2 = new ThreeMeshUI.Block({
       height: 0.53,
       width: 0.7,
@@ -414,38 +349,19 @@ function PortfolioUI() {
       backgroundOpacity: 0,
     }).add(
       new ThreeMeshUI.Text({
-        content:
-          "A comprehensive financial analysis and portfolio management application built with .NET 8 Web API and React TypeScript frontend. This application provides real-time stock data, financial statement analysis, portfolio tracking, and company profiling capabilities.",
+        content: "A comprehensive financial analysis and portfolio management application built with .NET 8 Web API and React TypeScript frontend. This application provides real-time stock data, financial statement analysis, portfolio tracking, and company profiling capabilities.",
       })
     );
-
     rightSubBlock.add(subSubBlock1, subSubBlock2);
-
-    // Content container to hold left and right sub-blocks
-    const contentContainer = new ThreeMeshUI.Block({
-      width: 4,
-      height: 1,
-      contentDirection: "row",
-      padding: 0.02,
-      margin: 0.025,
-      backgroundOpacity: 0,
-    });
-
     contentContainer.add(leftSubBlock, rightSubBlock);
     container.add(contentContainer);
-
-    // Load project image texture
     new THREE.TextureLoader().load(FinanceAppImage, (texture) => {
-      // @ts-ignore - ThreeMeshUI set method
-      leftSubBlock.set({
-        backgroundTexture: texture,
-      });
+      // @ts-ignore
+      leftSubBlock.set({ backgroundTexture: texture });
     });
-
     return container;
-  }, []); // Remove formData dependency since it's not used in the container
+  }, []);
 
-  // Create second project container for FitTrack
   const fitTrackContainer = useMemo(() => {
     const container = new ThreeMeshUI.Block({
       ref: "fittrack-container",
@@ -457,11 +373,9 @@ function PortfolioUI() {
       fontColor: new THREE.Color(0xffffff),
       backgroundOpacity: 0,
     });
+    container.position.set(0, -5.5, 0.1);
+    container.rotation.x = -0.55;
 
-    container.position.set(0, -5.5, 0.1); // FitTrack project moved down to make room for header
-    container.rotation.x = -0.55; // Add tilt for 3D feel like the viper example
-
-    // Project title block
     const title = new ThreeMeshUI.Block({
       height: 0.2,
       width: 1.5,
@@ -469,16 +383,22 @@ function PortfolioUI() {
       justifyContent: "center",
       fontSize: 0.09,
     });
-
     title.add(
       new ThreeMeshUI.Text({
         content: "FitTrack",
       })
     );
-
+    title.userData = { type: 'fittrack-title' };
     container.add(title);
-
-    // Left sub-block for project image
+    
+    const contentContainer = new ThreeMeshUI.Block({
+      width: 4,
+      height: 1,
+      contentDirection: "row",
+      padding: 0.02,
+      margin: 0.025,
+      backgroundOpacity: 0,
+    });
     const leftSubBlock = new ThreeMeshUI.Block({
       height: 0.95,
       width: 1.0,
@@ -487,30 +407,24 @@ function PortfolioUI() {
       textAlign: "left",
       justifyContent: "end",
     });
-
     const caption = new ThreeMeshUI.Block({
       height: 0.07,
       width: 0.37,
       textAlign: "center",
       justifyContent: "center",
     });
-
     caption.add(
       new ThreeMeshUI.Text({
         content: "Fitness Tracking App",
         fontSize: 0.04,
       })
     );
-
     leftSubBlock.add(caption);
-
-    // Right sub-block for project description
     const rightSubBlock = new ThreeMeshUI.Block({
       width: 2.5,
       height: 0.95,
       margin: 0.025,
     });
-
     const subSubBlock1 = new ThreeMeshUI.Block({
       height: 0.35,
       width: 0.7,
@@ -520,20 +434,10 @@ function PortfolioUI() {
       justifyContent: "center",
       backgroundOpacity: 0,
     }).add(
-      new ThreeMeshUI.Text({
-        content: "Built with ",
-      }),
-
-      new ThreeMeshUI.Text({
-        content: "React, TypeScript",
-        fontColor: new THREE.Color(0x92e66c),
-      }),
-
-      new ThreeMeshUI.Text({
-        content: " and Tailwind CSS.",
-      })
+      new ThreeMeshUI.Text({ content: "Built with " }),
+      new ThreeMeshUI.Text({ content: "React, TypeScript", fontColor: new THREE.Color(0x92e66c) }),
+      new ThreeMeshUI.Text({ content: " and Tailwind CSS." })
     );
-
     const subSubBlock2 = new ThreeMeshUI.Block({
       height: 0.53,
       width: 0.7,
@@ -545,34 +449,16 @@ function PortfolioUI() {
       backgroundOpacity: 0,
     }).add(
       new ThreeMeshUI.Text({
-        content:
-          "FitTrack is a modern fitness tracking web application built with React, TypeScript, and Tailwind CSS. It's designed to help users manage their workout routines and track their fitness progress.",
+        content: "FitTrack is a modern fitness tracking web application built with React, TypeScript, and Tailwind CSS. It's designed to help users manage their workout routines and track their fitness progress.",
       })
     );
-
     rightSubBlock.add(subSubBlock1, subSubBlock2);
-
-    // Content container to hold left and right sub-blocks
-    const contentContainer = new ThreeMeshUI.Block({
-      width: 4,
-      height: 1,
-      contentDirection: "row",
-      padding: 0.02,
-      margin: 0.025,
-      backgroundOpacity: 0,
-    });
-
     contentContainer.add(leftSubBlock, rightSubBlock);
     container.add(contentContainer);
-
-    // Load project image texture
     new THREE.TextureLoader().load(FitTrackImage, (texture) => {
-      // @ts-ignore - ThreeMeshUI set method
-      leftSubBlock.set({
-        backgroundTexture: texture,
-      });
+      // @ts-ignore
+      leftSubBlock.set({ backgroundTexture: texture });
     });
-
     return container;
   }, []);
 
@@ -581,15 +467,12 @@ function PortfolioUI() {
       width: 6,
       height: 0.8,
       padding: 0.1,
-      backgroundColor: new THREE.Color(0x2c3e50), // dark blue-gray to match header
+      backgroundColor: new THREE.Color(0x2c3e50),
       contentDirection: "row",
       justifyContent: "start",
       alignItems: "center",
     });
-    // Set position after creation
-    block.position.set(0, -7, 0); // Contact block moved down to make room for header
-
-    // Email section
+    block.position.set(0, -7, 0);
     const emailText = new ThreeMeshUI.Text({
       content: "tshepiso.molefi@yahoo.com",
       fontSize: 0.08,
@@ -597,11 +480,8 @@ function PortfolioUI() {
       fontTexture: FontImage,
       fontColor: new THREE.Color(0xecf0f1),
     });
-    // Position email text to the left within footer bounds
     emailText.position.set(-1.5, 0, 0);
     block.add(emailText);
-
-    // GitHub section
     const githubText = new ThreeMeshUI.Text({
       content: "GitHub: @thefoenixweb",
       fontSize: 0.08,
@@ -609,204 +489,49 @@ function PortfolioUI() {
       fontTexture: FontImage,
       fontColor: new THREE.Color(0xecf0f1),
     });
-    // Position GitHub text to the right within footer bounds
     githubText.position.set(1.5, 0, 0);
     block.add(githubText);
-
     return block;
-  }, []); // Remove formData dependency since it's not used in the contact block
+  }, []);
 
+  const lighting = useMemo(() => {
+    const lightsGroup = new THREE.Group();
+    lightsGroup.add(new THREE.AmbientLight(0xffffff, 1.2));
+    lightsGroup.add(new THREE.DirectionalLight(0xffffff, 1.5));
+    lightsGroup.add(new THREE.DirectionalLight(0xffffff, 0.8));
+    lightsGroup.add(new THREE.PointLight(0xffffff, 0.8));
+    lightsGroup.add(new THREE.PointLight(0xffffff, 1, 0, 0));
+    const spotLight = new THREE.SpotLight(0xffffff, 1.5, 0, Math.PI / 3, 0.3);
+    lightsGroup.add(spotLight);
+    
+    lightsGroup.children[1].position.set(5, 5, 5);
+    lightsGroup.children[2].position.set(-5, 5, 5);
+    lightsGroup.children[3].position.set(10, 10, 10);
+    lightsGroup.children[4].position.set(2, 0, 5);
+    lightsGroup.children[5].position.set(0, 5, 8);
 
+    return lightsGroup;
+  }, []);
 
-  // Scroll-based animations
   useEffect(() => {
     if (!tl.current) {
       tl.current = gsap.timeline();
     }
-
-    // Camera movement based on scroll
     if (tl.current) {
-      tl.current.to(
-        camera.position,
-        {
-          duration: 7,
-          y: -3,
-          z: 6,
-        },
-        0
-      );
+      tl.current.to(camera.position, { duration: 7, y: -3, z: 6 }, 0);
     }
-
-    // UI group movement
     if (uiGroupRef.current) {
-      tl.current.to(
-        uiGroupRef.current.position,
-        {
-          duration: 7,
-          y: 6,
-        },
-        0
-      );
+      tl.current.to(uiGroupRef.current.position, { duration: 7, y: 6 }, 0);
     }
   }, []);
 
-  // Apply scroll-based animations
   useFrame(() => {
     if (tl.current) {
       tl.current.seek(scroll.offset * tl.current.duration());
     }
-  });
-
-  // After the UI is created, add it to the r3f scene's group
-  useEffect(() => {
-
-    if (uiGroupRef.current) {
-
-      // Clear any existing blocks to prevent duplicates
-      uiGroupRef.current.clear();
-      
-      // Clear clickable objects to prevent duplicates
-      clearClickableObjects();
-      
-      // Add each portfolio section directly to the scene
-      uiGroupRef.current.add(headerBlock);
-      uiGroupRef.current.add(descriptionBlock);
-      uiGroupRef.current.add(techStackTitle);
-      uiGroupRef.current.add(projectContainer);
-      uiGroupRef.current.add(fitTrackContainer);
-      uiGroupRef.current.add(contactBlock);
-      
-      // Portfolio sections added to scene
-      
-      // Create a truly invisible clickable mesh that covers the Finance App title area
-      const titleClickMesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(1.5, 0.2), // Same size as the title
-        new THREE.MeshBasicMaterial({ 
-          transparent: true, 
-          opacity: 0, // Completely invisible
-          side: THREE.DoubleSide,
-          depthWrite: false, // Don't write to depth buffer
-          depthTest: false   // Don't test against depth buffer
-        })
-      );
-      
-      // Position the mesh exactly where the Finance App title is
-      titleClickMesh.position.set(0, -3.5, 0.1); // Very close to the title
-      titleClickMesh.userData = { type: 'finance-app-title' };
-      titleClickMesh.userData.url = 'https://financeapp555.netlify.app/';
-      
-      // Make the mesh truly invisible by setting visible to false
-      titleClickMesh.visible = false;
-      
-      // Add to clickable objects array
-      clickableObjects.current.push(titleClickMesh);
-      
-      // Add to the scene
-      uiGroupRef.current.add(titleClickMesh);
-      
-      console.log('Truly invisible clickable mesh added for Finance App title');
-      
-      // No test button needed - URL opening is working
-      
-      // Title click mesh is now in the scene
-      
-      // Add 3D models to the scene
-      const modelsGroup = new THREE.Group();
-      modelsGroup.position.set(0, -3, 0);
-
-      
-
-        // Create and add GLB models to the group
-        
-        // Setup Draco loader for compressed models
-        const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath('/draco/');
-        
-        // Load React model with Draco compression
-        const reactLoader = new GLTFLoader();
-        reactLoader.setDRACOLoader(dracoLoader);
-        reactLoader.load('/1661753280.glb', (gltf: any) => {
-          const glbScene = gltf.scene.clone();
-          glbScene.position.set(-1.5, 0, 0);
-          glbScene.scale.set(0.7, 0.7, 0.7);
-          modelsGroup.add(glbScene);
-        });
-        
-        // Load JavaScript model
-        const jsLoader = new GLTFLoader();
-        jsLoader.setDRACOLoader(dracoLoader);
-        jsLoader.load('/JS.glb', (gltf: any) => {
-          const jsScene = gltf.scene.clone();
-          jsScene.position.set(-0.5, 0, 0);
-          jsScene.scale.set(2, 2, 2);
-          modelsGroup.add(jsScene);
-
-        });
-        
-        // Load TypeScript model
-        const tsLoader = new GLTFLoader();
-        tsLoader.setDRACOLoader(dracoLoader);
-        tsLoader.load('/TS.glb', (gltf: any) => {
-          const tsScene = gltf.scene.clone();
-          tsScene.position.set(0.5, 0, 0);
-          tsScene.scale.set(2, 2, 2);
-          modelsGroup.add(tsScene);
-
-        }); 
-        
-        // Load C# model
-        const csLoader = new GLTFLoader();
-        csLoader.setDRACOLoader(dracoLoader);
-        csLoader.load('/CS.glb', (gltf: any) => {
-          const csScene = gltf.scene.clone();
-          csScene.position.set(1.5, 0, 0);
-          csScene.scale.set(2, 2, 2);
-          modelsGroup.add(csScene);
-
-        });
-        
-        // Load Avatar 3D model with Draco compression
-        
-        const avatarLoader = new GLTFLoader();
-        avatarLoader.setDRACOLoader(dracoLoader);
-        
-        avatarLoader.load('/avatar.glb', (gltf: any) => {
-          const avatarScene = gltf.scene.clone();
-          avatarScene.position.set(2.1, 2.1, 0);
-          avatarScene.scale.set(0.7, 0.7, 0.7);
-          modelsGroup.add(avatarScene);
-        });
-        
-        uiGroupRef.current.add(modelsGroup);
-        
-        // Add the 3D grid system
-        uiGroupRef.current.add(createGridSystem);
-        uiGroupRef.current.add(createSectionGrid);
-        uiGroupRef.current.add(createVerticalGridLines);
-        uiGroupRef.current.add(createCornerAccents);
-        
-        // No test objects needed
-        
-
-      
-
-    } else {
-    }
-    // Cleanup function: remove all children from the group
-    return () => {
-      if (uiGroupRef.current) {
-        uiGroupRef.current.clear();
-      }
-    };
-  }, [headerBlock, descriptionBlock, techStackTitle, projectContainer, fitTrackContainer, contactBlock]);
-
-  // Update three-mesh-ui on every frame
-  useFrame(() => {
     ThreeMeshUI.update();
     
-    // Animate grid system based on scroll position
     if (createGridSystem && scroll) {
-      // Subtle grid opacity pulse based on scroll
       createGridSystem.children.forEach((grid) => {
         if (grid instanceof THREE.GridHelper && grid.material) {
           const baseOpacity = 0.08;
@@ -815,41 +540,30 @@ function PortfolioUI() {
         }
       });
     }
-    
-    // Animate section dividers with subtle movement
     if (createSectionGrid && scroll) {
       createSectionGrid.children.forEach((line, index) => {
         if (line instanceof THREE.Line && line.material) {
-          // Subtle opacity pulse based on scroll
           const baseOpacity = 0.2;
           const pulseEffect = Math.sin(scroll.offset * Math.PI * 3 + index) * 0.05;
           (line.material as THREE.LineBasicMaterial).opacity = Math.max(0.1, baseOpacity + pulseEffect);
         }
       });
     }
-    
-    // Animate vertical lines with scroll effect
     if (createVerticalGridLines && scroll) {
       createVerticalGridLines.children.forEach((line, index) => {
         if (line instanceof THREE.Line && line.material) {
-          // Opacity wave effect
           const baseOpacity = [0.2, 0.2, 0.15][index] || 0.15;
           const waveEffect = Math.sin(scroll.offset * Math.PI * 3 + index * Math.PI / 2) * 0.05;
           (line.material as THREE.LineBasicMaterial).opacity = Math.max(0.05, baseOpacity + waveEffect);
         }
       });
     }
-    
-    // Animate corner accents with pulsing effect
     if (createCornerAccents && scroll) {
       createCornerAccents.children.forEach((line, index) => {
         if (line instanceof THREE.Line && line.material) {
-          // Cyan pulsing effect
           const baseOpacity = 0.6;
           const pulseEffect = Math.sin(scroll.offset * Math.PI * 5 + index * 0.5) * 0.2;
           (line.material as THREE.LineBasicMaterial).opacity = Math.max(0.2, baseOpacity + pulseEffect);
-          
-          // Subtle color shift
           const time = Date.now() * 0.001;
           const colorShift = Math.sin(time + index) * 0.3;
           (line.material as THREE.LineBasicMaterial).color.setHSL(0.5 + colorShift * 0.1, 1, 0.5);
@@ -858,63 +572,147 @@ function PortfolioUI() {
     }
   });
 
-  // Create multiple stacked background grids for depth
+  useEffect(() => {
+    if (uiGroupRef.current) {
+      uiGroupRef.current.clear();
+      clearClickableObjects();
+
+      uiGroupRef.current.add(headerBlock);
+      uiGroupRef.current.add(descriptionBlock);
+      uiGroupRef.current.add(techStackTitle);
+      uiGroupRef.current.add(projectContainer);
+      uiGroupRef.current.add(fitTrackContainer);
+      uiGroupRef.current.add(contactBlock);
+      uiGroupRef.current.add(lighting);
+      
+      const fitTrackClickMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.5, 0.2),
+        new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 })
+      );
+      fitTrackClickMesh.position.set(0, -5, 0.2);
+      fitTrackClickMesh.userData = { type: 'fittrack-title' };
+      fitTrackClickMesh.visible = false;
+      clickableObjects.current.push(fitTrackClickMesh);
+      uiGroupRef.current.add(fitTrackClickMesh);
+
+      const titleClickMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.5, 0.2),
+        new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 })
+      );
+      titleClickMesh.position.set(0, -3.5, 0.1);
+      titleClickMesh.userData = { type: 'finance-app-title' };
+      titleClickMesh.visible = false;
+      clickableObjects.current.push(titleClickMesh);
+      uiGroupRef.current.add(titleClickMesh);
+
+      const modelsGroup = new THREE.Group();
+      modelsGroup.position.set(0, -3, 0);
+
+      const dracoLoader = new DRACOLoader();
+      dracoLoader.setDecoderPath('/draco/');
+
+      const reactLoader = new GLTFLoader();
+      reactLoader.setDRACOLoader(dracoLoader);
+      reactLoader.load('/1661753280.glb', (gltf: any) => {
+        const glbScene = gltf.scene.clone();
+        glbScene.position.set(-1.5, 0, 0);
+        glbScene.scale.set(0.7, 0.7, 0.7);
+        modelsGroup.add(glbScene);
+      });
+
+      const jsLoader = new GLTFLoader();
+      jsLoader.setDRACOLoader(dracoLoader);
+      jsLoader.load('/JS.glb', (gltf: any) => {
+        const jsScene = gltf.scene.clone();
+        jsScene.position.set(-0.5, 0, 0);
+        jsScene.scale.set(2, 2, 2);
+        modelsGroup.add(jsScene);
+      });
+
+      const tsLoader = new GLTFLoader();
+      tsLoader.setDRACOLoader(dracoLoader);
+      tsLoader.load('/TS.glb', (gltf: any) => {
+        const tsScene = gltf.scene.clone();
+        tsScene.position.set(0.5, 0, 0);
+        tsScene.scale.set(2, 2, 2);
+        modelsGroup.add(tsScene);
+      });
+
+      const csLoader = new GLTFLoader();
+      csLoader.setDRACOLoader(dracoLoader);
+      csLoader.load('/CS.glb', (gltf: any) => {
+        const csScene = gltf.scene.clone();
+        csScene.position.set(1.5, 0, 0);
+        csScene.scale.set(2, 2, 2);
+        modelsGroup.add(csScene);
+      });
+
+      const avatarLoader = new GLTFLoader();
+      avatarLoader.setDRACOLoader(dracoLoader);
+
+      avatarLoader.load('/avatar.glb', (gltf: any) => {
+        const avatarScene = gltf.scene.clone();
+        avatarScene.position.set(2.1, 2.1, 0);
+        avatarScene.scale.set(0.7, 0.7, 0.7);
+        modelsGroup.add(avatarScene);
+      });
+
+      uiGroupRef.current.add(modelsGroup);
+      uiGroupRef.current.add(createGridSystem);
+      uiGroupRef.current.add(createSectionGrid);
+      uiGroupRef.current.add(createVerticalGridLines);
+      uiGroupRef.current.add(createCornerAccents);
+    }
+    return () => {
+      if (uiGroupRef.current) {
+        uiGroupRef.current.clear();
+      }
+    };
+  }, [headerBlock, descriptionBlock, techStackTitle, projectContainer, fitTrackContainer, contactBlock, lighting]);
+
   const createGridSystem = useMemo(() => {
     const gridGroup = new THREE.Group();
-    
-    // Create multiple grids with different sizes and positions for visible layering
     const gridConfigs = [
-      { size: 25, divisions: 25, depth: -15, opacity: 0.25, color: 0xffffff }, // Largest, farthest back
+      { size: 25, divisions: 25, depth: -15, opacity: 0.25, color: 0xffffff },
       { size: 20, divisions: 20, depth: -10, opacity: 0.21, color: 0xcccccc },
       { size: 15, divisions: 15, depth: -5, opacity: 0.17, color: 0x999999 },
       { size: 10, divisions: 10, depth: 0, opacity: 0.13, color: 0x666666 },
-      { size: 5, divisions: 5, depth: 5, opacity: 0.09, color: 0x333333 }   // Smallest, closest
+      { size: 5, divisions: 5, depth: 5, opacity: 0.09, color: 0x333333 }
     ];
-    
     gridConfigs.forEach((config) => {
       const backgroundGrid = new THREE.GridHelper(config.size, config.divisions, 0xffffff, 0xffffff);
       backgroundGrid.material.opacity = config.opacity;
       backgroundGrid.material.transparent = true;
       backgroundGrid.position.set(0, 0, config.depth);
       backgroundGrid.material.color.setHex(config.color);
-      
       gridGroup.add(backgroundGrid);
     });
-    
     return gridGroup;
   }, []);
 
-  // Create simple section divider lines
   const createSectionGrid = useMemo(() => {
     const sectionGrids = new THREE.Group();
-    
-    // Simple horizontal section dividers
     const sectionDividers = [
-      { y: 0.5, width: 8 },   // Between header and description
-      { y: -0.5, width: 8 },  // Between description and tech stack
-      { y: -2, width: 8 },    // Between tech stack and projects
-      { y: -4, width: 8 },    // Between projects and contact
+      { y: 0.5, width: 8 },
+      { y: -0.5, width: 8 },
+      { y: -2, width: 8 },
+      { y: -4, width: 8 },
     ];
-    
     sectionDividers.forEach(({ y, width }) => {
       const divider = new THREE.Line(
         new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(-width/2, y, 0.1),
-          new THREE.Vector3(width/2, y, 0.1)
+          new THREE.Vector3(-width / 2, y, 0.1),
+          new THREE.Vector3(width / 2, y, 0.1)
         ]),
         new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.2, transparent: true })
       );
       sectionGrids.add(divider);
     });
-    
     return sectionGrids;
   }, []);
 
-  // Create vertical grid lines for section separation
   const createVerticalGridLines = useMemo(() => {
     const verticalLines = new THREE.Group();
-    
-    // Left boundary line
     const leftLine = new THREE.Line(
       new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(-4, 2, 0),
@@ -923,8 +721,6 @@ function PortfolioUI() {
       new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.2, transparent: true })
     );
     verticalLines.add(leftLine);
-    
-    // Right boundary line
     const rightLine = new THREE.Line(
       new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(4, 2, 0),
@@ -933,8 +729,6 @@ function PortfolioUI() {
       new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.2, transparent: true })
     );
     verticalLines.add(rightLine);
-    
-    // Center divider line
     const centerLine = new THREE.Line(
       new THREE.BufferGeometry().setFromPoints([
         new THREE.Vector3(0, 2, 0),
@@ -943,22 +737,16 @@ function PortfolioUI() {
       new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.15, transparent: true })
     );
     verticalLines.add(centerLine);
-    
     return verticalLines;
   }, []);
 
-  // Create corner accent lines for futuristic feel
   const createCornerAccents = useMemo(() => {
     const cornerGroup = new THREE.Group();
-    
-    // Corner accent lines (top-left, top-right, bottom-left, bottom-right)
     const cornerPositions = [
-      [-3.5, 1.5, 0.2], [3.5, 1.5, 0.2], // Top corners
-      [-3.5, -5.5, 0.2], [3.5, -5.5, 0.2]  // Bottom corners
+      [-3.5, 1.5, 0.2], [3.5, 1.5, 0.2],
+      [-3.5, -5.5, 0.2], [3.5, -5.5, 0.2]
     ];
-    
     cornerPositions.forEach(([x, y, z]) => {
-      // Horizontal line
       const horizontalLine = new THREE.Line(
         new THREE.BufferGeometry().setFromPoints([
           new THREE.Vector3(x - 0.3, y, z),
@@ -966,8 +754,6 @@ function PortfolioUI() {
         ]),
         new THREE.LineBasicMaterial({ color: 0x00ffff, opacity: 0.6, transparent: true })
       );
-      
-      // Vertical line
       const verticalLine = new THREE.Line(
         new THREE.BufferGeometry().setFromPoints([
           new THREE.Vector3(x, y - 0.3, z),
@@ -975,41 +761,12 @@ function PortfolioUI() {
         ]),
         new THREE.LineBasicMaterial({ color: 0x00ffff, opacity: 0.6, transparent: true })
       );
-      
       cornerGroup.add(horizontalLine, verticalLine);
     });
-    
     return cornerGroup;
   }, []);
 
-
-
-  return (
-    <>
-      {/* This group holds your entire three-mesh-ui structure */}
-      <group ref={uiGroupRef} position={[0, 1.5, 3]} rotation={[0, 0, 0]}>
-        {/* The actual ThreeMeshUI objects are added to uiGroupRef.current programmatically */}
-      </group>
-
-      {/* 3D Models are now added programmatically to uiGroupRef */}
-
-      {/* Enhanced lighting for GLB models and UI elements */}
-      <ambientLight intensity={1.2} />
-      <directionalLight position={[5, 5, 5]} intensity={1.5} />
-      <directionalLight position={[-5, 5, 5]} intensity={0.8} />
-      <pointLight position={[10, 10, 10]} intensity={0.8} />
-      <pointLight position={[2, 0, 5]} intensity={1} color="#ffffff" />
-      <spotLight 
-        position={[0, 5, 8]} 
-        intensity={1.5} 
-        angle={Math.PI / 3} 
-        penumbra={0.3} 
-        color="#ffffff"
-      />
-
-      {/* OrbitControls handled in App.tsx */}
-    </>
-  );
+  return <group ref={uiGroupRef} />;
 }
 
 export default PortfolioUI;
